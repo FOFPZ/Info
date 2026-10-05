@@ -499,6 +499,7 @@
     document.removeEventListener("keydown", skipBoot);
     promptRow.classList.add("ready");
     cmd.disabled = false;
+    cmd.placeholder = "";
     cmd.focus({ preventScroll: true });
     setStatus("готово");
     document.title = (P.nick || "FOFPZ") + " — анонимная визитка";
