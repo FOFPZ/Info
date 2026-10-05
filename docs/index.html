@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="green">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FOFPZ — анонимная визитка</title>
+
+  <meta name="description" content="Анонимная визитка FOFPZ: страница в виде терминала. Команды whoami, about, skills, links, privacy. Без аналитики, cookies и сторонних запросов.">
+  <meta name="author" content="FOFPZ">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#04070a">
+  <meta name="referrer" content="no-referrer">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="FOFPZ">
+  <meta property="og:title" content="FOFPZ — анонимная визитка">
+  <meta property="og:description" content="Страница в виде терминала. Ник вместо имени, ноль сторонних запросов, никакой телеметрии.">
+  <meta property="og:url" content="https://fofpz.github.io/Info/">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:image" content="https://fofpz.github.io/Info/assets/og.png">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+
+<body>
+  <main class="wrap">
+    <h1 class="visually-hidden">FOFPZ — анонимная визитка в виде терминала</h1>
+
+    <section class="terminal" aria-label="Терминал">
+      <header class="titlebar">
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="title">
+          <span data-bind="host">fofpz@anon:</span><span data-bind="dir">~</span> — визитка
+        </span>
+        <button id="theme-btn" class="ghost-btn" type="button" title="Сменить тему" aria-label="Сменить тему оформления">◐</button>
+      </header>
+
+      <div class="screen" id="screen">
+        <div class="output" id="output" role="log" aria-live="polite" aria-relevant="additions"></div>
+
+        <form class="prompt-row" id="prompt-row" autocomplete="off" onsubmit="return false;">
+          <label class="visually-hidden" for="cmd">Введите команду</label>
+          <span class="ps1" aria-hidden="true"><span data-bind="host">fofpz@anon:</span><span data-bind="dir">~</span>$</span>
+          <input id="cmd" name="cmd" type="text" inputmode="text" autocapitalize="off"
+                 autocorrect="off" spellcheck="false" maxlength="120" disabled
+                 placeholder="загрузка…">
+        </form>
+      </div>
+
+      <footer class="statusbar">
+        <span id="status-msg">загрузка</span>
+        <span class="hint-cell">help — список команд · приватных данных нет</span>
+        <span class="right"><span id="theme-name">phosphor-green</span><span class="sep"> · </span><time id="clock">--:--:--</time></span>
+      </footer>
+    </section>
+
+    <p class="keys">
+      <kbd>Enter</kbd> выполнить ·
+      <kbd>Tab</kbd> дополнить ·
+      <kbd>↑</kbd><kbd>↓</kbd> история ·
+      <kbd>Ctrl</kbd>+<kbd>L</kbd> очистить
+    </p>
+
+    <noscript>
+      <div class="noscript">
+        <h2>FOFPZ — анонимная визитка</h2>
+        <p>Страница работает как терминал и требует JavaScript. Здесь только псевдоним: настоящее имя, город и контакты не публикуются.</p>
+        <p>Профиль: <a class="link" href="https://github.com/FOFPZ" rel="noopener noreferrer nofollow">github.com/FOFPZ</a> ·
+           Исходники: <a class="link" href="https://github.com/FOFPZ/Info" rel="noopener noreferrer nofollow">github.com/FOFPZ/Info</a></p>
+      </div>
+    </noscript>
+  </main>
+
+  <script src="assets/profile.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
