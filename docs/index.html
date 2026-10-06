@@ -23,7 +23,7 @@
   <meta property="og:image" content="https://fofpz.github.io/Info/assets/og.png">
 
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=14">
+  <link rel="stylesheet" href="assets/style.css?v=15">
 </head>
 
 <body>
@@ -39,7 +39,7 @@
       <button class="tab" id="tab-log" data-view="log" type="button">лог</button>
     </nav>
     <div class="nav-actions">
-      <button id="login-btn" class="ghost-btn" type="button" aria-label="Войти в режим владельца">войти</button>
+      <button id="login-btn" class="ghost-btn" type="button" title="войти через консоль: команда login" aria-label="Войти через консоль (команда login)">войти</button>
       <button id="theme-btn" class="ghost-btn" type="button" title="Сменить тему" aria-label="Сменить тему оформления">◐</button>
     </div>
   </header>
@@ -84,8 +84,8 @@
         <kbd>Ctrl</kbd>+<kbd>L</kbd> очистить
       </p>
 
-      <section class="secret-date" aria-label="Засекреченная дата">
-        <span class="visually-hidden">Засекреченная дата скрыта символами</span>
+      <section class="secret-date" aria-label="Обратный отсчёт до 20.09.2027">
+        <span class="visually-hidden">Обратный отсчёт до 20 сентября 2027 года</span>
         <div class="secret-date-value" id="secret-date" aria-hidden="true">??.??.????</div>
         <p class="secret-date-line1" id="secret-line1"></p>
         <p class="secret-date-line2"><span id="secret-line2"></span><span class="secret-caret" id="secret-caret" aria-hidden="true"></span></p>
@@ -117,25 +117,9 @@
     </section>
 
     <footer class="site-footer glass">
-      <span data-bind="title">??!?@#$@</span> · FOFPZ · без трекеров, без cookies, без лишнего · rev 16
+      <span data-bind="title">??!?@#$@</span> · FOFPZ · без трекеров, без cookies, без лишнего · rev 17
     </footer>
   </main>
-
-  <div class="dialog-backdrop" id="login-dialog" hidden>
-    <form class="dialog glass" id="login-form" autocomplete="off" novalidate>
-      <div class="dialog-title">проверка доступа</div>
-      <label class="dialog-label" for="login-user">имя пользователя</label>
-      <input class="dialog-input" id="login-user" type="text"
-             autocapitalize="off" autocorrect="off" spellcheck="false">
-      <label class="dialog-label" for="login-pass">пароль</label>
-      <input class="dialog-input" id="login-pass" type="password">
-      <div class="dialog-actions">
-        <button class="ghost-btn" type="submit">войти</button>
-        <button class="ghost-btn" type="button" id="login-cancel">отмена</button>
-      </div>
-      <div class="dialog-msg" id="login-msg" role="alert" aria-live="assertive"></div>
-    </form>
-  </div>
 
   <noscript>
     <div class="noscript glass">
@@ -146,7 +130,7 @@
     </div>
   </noscript>
 
-  <script src="assets/profile.js?v=14"></script>
-  <script src="assets/app.js?v=14"></script>
+  <script src="assets/profile.js?v=15"></script>
+  <script src="assets/app.js?v=15"></script>
 </body>
 </html>
