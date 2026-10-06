@@ -89,7 +89,9 @@ window.PROFILE = {
               "через миксины GuiMessage и GuiGraphics — почти 1:1 как " +
               "оригинальный ChatHeads.",
       tags:   ["java", "fabric", "mixin", "minecraft"],
-      url:    "https://github.com/FOFPZ/ChatHeadsAndTAB"
+      url:    "https://github.com/FOFPZ/ChatHeadsAndTAB",
+      download: "https://github.com/FOFPZ/ChatHeadsAndTAB/releases",
+      mark:   "chathead"
     },
     {
       name:   "WorldEdit",
@@ -97,7 +99,9 @@ window.PROFILE = {
       desc:   "Аналог WorldEdit для тех, у кого он не работает на 1.21.11: " +
               "регионы и установка блоков. Поддержка версий от 1.13 до 1.21+.",
       tags:   ["java", "plugin", "minecraft"],
-      url:    "https://github.com/FOFPZ/WorldEdit"
+      url:    "https://github.com/FOFPZ/WorldEdit",
+      download: "https://github.com/FOFPZ/WorldEdit/releases",
+      mark:   "wand"
     },
     {
       name:   "Luna Launcher",
@@ -106,7 +110,10 @@ window.PROFILE = {
               "и Forge, версии 1.0 → 26.3, свои ники, сборки с модами, " +
               "Discord Rich Presence и авто-обновление.",
       tags:   ["python", "windows", "minecraft"],
-      url:    "https://github.com/FOFPZ/LunaLauncher"
+      url:    "https://github.com/FOFPZ/LunaLauncher",
+      download: "https://github.com/FOFPZ/LunaLauncher/releases",
+      logo:   "assets/projects/luna-logo.png",
+      mark:   "moon"
     }
     /* Новый проект добавляйте так:
     { name: "...", status: "...", desc: "...", tags: ["..."], url: "https://..." }

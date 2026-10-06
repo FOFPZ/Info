@@ -464,29 +464,62 @@
     return name;
   }
 
+  function markSpan(kind) {
+    var url = "assets/icons/" + kind + ".svg";
+    var m = mk("span", "mark");
+    m.style.setProperty("-webkit-mask-image", "url('" + url + "')");
+    m.style.setProperty("mask-image", "url('" + url + "')");
+    return m;
+  }
+
   function renderProjects() {
     var grid = document.getElementById("projects-grid");
     if (!grid) return;
     grid.innerHTML = "";
     (P.projects || []).forEach(function (p) {
       var card = mk("article", "card glass");
+      var media = mk("div", "card-media");
+      if (p.logo) {
+        var img = document.createElement("img");
+        img.className = "card-logo";
+        img.src = p.logo;
+        img.alt = "";
+        img.loading = "lazy";
+        img.addEventListener("error", function () {
+          img.style.display = "none";
+          if (p.mark) media.insertBefore(markSpan(p.mark), media.firstChild);
+        });
+        media.appendChild(img);
+      } else if (p.mark) {
+        media.appendChild(markSpan(p.mark));
+      }
       var head = mk("div", "card-head");
       head.appendChild(mk("h3", "card-title", p.name));
       if (p.status) head.appendChild(mk("span", "chip", p.status));
-      card.appendChild(head);
+      media.appendChild(head);
+      card.appendChild(media);
       card.appendChild(mk("p", "card-text", p.desc));
       if (p.tags && p.tags.length) {
         var tags = mk("div", "tags");
         p.tags.forEach(function (t) { tags.appendChild(mk("span", "tag", t)); });
         card.appendChild(tags);
       }
+      var links = mk("div", "card-links");
       if (p.url) {
-        var a = mk("a", "card-link", "смотреть на github →");
+        var a = mk("a", "card-link", "репозиторий →");
         a.href = p.url;
         a.target = "_blank";
         a.rel = "noopener noreferrer nofollow";
-        card.appendChild(a);
+        links.appendChild(a);
       }
+      if (p.download) {
+        var d = mk("a", "card-link", "скачать →");
+        d.href = p.download;
+        d.target = "_blank";
+        d.rel = "noopener noreferrer nofollow";
+        links.appendChild(d);
+      }
+      if (links.childNodes.length) card.appendChild(links);
       grid.appendChild(card);
     });
   }
@@ -498,11 +531,18 @@
     (P.friends || []).forEach(function (f) {
       var url = f.url || ("https://t.me/" + String(f.handle).replace("@", ""));
       var card = mk("article", "card glass");
+      var row = mk("div", "friend-row");
+      var av = mk("span", "avatar", String(f.handle).replace("@", "").charAt(0).toUpperCase());
+      row.appendChild(av);
+      var info = mk("div", "friend-info");
       var a = mk("a", "friend-handle", f.handle);
       a.href = url;
       a.target = "_blank";
       a.rel = "noopener noreferrer nofollow";
-      card.appendChild(a);
+      info.appendChild(a);
+      info.appendChild(mk("span", "friend-tag", "telegram"));
+      row.appendChild(info);
+      card.appendChild(row);
       if (f.note) card.appendChild(mk("p", "card-text", f.note));
       var tg = mk("a", "card-link", "написать в telegram →");
       tg.href = url;
@@ -516,7 +556,7 @@
   function initViews() {
     renderProjects();
     renderFriends();
-    Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (tab) {
+    Array.prototype.forEach.call(document.querySelectorAll(".tab, .view-back"), function (tab) {
       tab.addEventListener("click", function () {
         if (switchView(tab.getAttribute("data-view")) === "terminal" && !booting && !cmd.disabled) {
           cmd.focus();
