@@ -214,7 +214,11 @@
       ps.appendChild(mk("span", "ps1-host", (P.host || "anon") + ":"));
       ps.appendChild(mk("span", "ps1-dir", P.dir || "~"));
       ps.appendChild(mk("span", "ps1-dollar", "$"));
-      if (owner) ps.appendChild(mk("span", "ps1-owner", "(владелец)"));
+      if (typeof currentUser !== "undefined" && currentUser === "noloverme") {
+        ps.appendChild(mk("span", "ps1-owner", "(noloverme)"));
+      } else if (typeof owner !== "undefined" && owner) {
+        ps.appendChild(mk("span", "ps1-owner", "(владелец)"));
+      }
       el.appendChild(ps);
       el.appendChild(mk("span", "cmd-text", rawLine));
       output.appendChild(el); trim(); scrollDown();
@@ -286,99 +290,172 @@
     return H.map(function (x) { return ("00000000" + x.toString(16)).slice(-8); }).join("");
   }
 
-  /* --- режим владельца ----------------------------------------------------
+  /* --- вход: консольный login + гость noloverme ----------------------------
      ВАЖНО: это демонстрация доступа на статичной странице, а не защита.
-     В коде лежит только SHA-256 хеш пароля, сам пароль в репозиторий не
-     попадает. Всё содержимое страницы по-прежнему публично в исходниках.
+     В коде лежит только SHA-256 хеш пароля fofpz, сам пароль в репозиторий
+     не попадает. Всё содержимое страницы по-прежнему публично в исходниках.
+     Вход идёт прямо в консоли: команда login → имя → пароль → проверка.
+     Пользователь noloverme входит без пароля и открывает свои команды.
      ---------------------------------------------------------------------- */
   var AUTH = {
     user: "fofpz",
     passSha256: "bd87a45a29b400e16cc289f309b34eebb7961af6843feb2a3663ae07119f1f61"
   };
+  var NOLOVERME = {
+    user: "noloverme",
+    github: "https://github.com/noloverme"
+  };
   var OWNER_KEY = "fofpz-owner";
 
-  var dlg      = document.getElementById("login-dialog");
-  var dlgForm  = document.getElementById("login-form");
-  var dlgUser  = document.getElementById("login-user");
-  var dlgPass  = document.getElementById("login-pass");
-  var dlgMsg   = document.getElementById("login-msg");
-  var dlgClose = document.getElementById("login-cancel");
   var loginBtn = document.getElementById("login-btn");
-  var owner    = false;
+  var owner = false;          /* true только для fofpz (совместимость) */
+  var currentUser = null;     /* null | "fofpz" | "noloverme" */
+  var loginStep = null;       /* null | "user" | "pass" */
+  var pendingUser = "";
+
+  /* старый модальный диалог больше не используется: вход — в консоли.
+     если его разметка ещё есть в index.html — прячем её. */
+  (function hideLegacyDialog() {
+    var dlg = document.getElementById("login-dialog");
+    if (dlg) dlg.hidden = true;
+  })();
+
+  function resetLoginPrompt() {
+    try { cmd.type = "text"; } catch (e) {}
+    cmd.placeholder = "";
+  }
 
   function openLogin() {
-    if (owner) { print.line("вы уже в режиме владельца", "muted"); return; }
-    if (!dlg) return;
-    dlg.hidden = false;
-    dlgMsg.textContent = "";
-    dlgUser.value = "";
-    dlgPass.value = "";
-    dlgUser.focus();
+    if (booting) {
+      print.line("подождите окончания загрузки, потом повторите login", "muted");
+      return;
+    }
+    if (currentUser) {
+      print.line("вы уже вошли как " + currentUser + " (logout — выйти)", "muted");
+      return;
+    }
+    if (loginStep) return; /* уже вводим */
+    loginStep = "user";
+    pendingUser = "";
+    print.line("вход — введите имя пользователя (пустая строка — отмена):", "muted");
+    cmd.placeholder = "имя пользователя";
+    setStatus("введите имя");
+    cmd.focus();
   }
 
   function closeLogin() {
-    if (dlg) dlg.hidden = true;
+    loginStep = null;
+    pendingUser = "";
+    resetLoginPrompt();
     if (!cmd.disabled) cmd.focus();
   }
 
-  function setOwner(on, announce) {
-    owner = on;
-    if (COMMANDS.secret) COMMANDS.secret.hidden = !on;
+  function cancelLogin() {
+    closeLogin();
+    print.line("вход отменён", "muted");
+    print.blank();
+    setStatus("вход отменён");
+  }
+
+  function setSession(user, announce) {
+    currentUser = user; /* null | "fofpz" | "noloverme" */
+    owner = (user === AUTH.user);
+    var isNolo = (user === NOLOVERME.user);
+    if (typeof COMMANDS !== "undefined") {
+      if (COMMANDS.secret) COMMANDS.secret.hidden = !owner;
+      if (COMMANDS.noloverme) COMMANDS.noloverme.hidden = !(isNolo || owner);
+      if (COMMANDS.info) COMMANDS.info.hidden = !(isNolo || owner);
+    }
     var badge = document.getElementById("owner-badge");
     var seg = document.getElementById("owner-seg");
-    if (badge) badge.hidden = !on;
-    if (seg) seg.hidden = !on;
+    if (badge) {
+      badge.hidden = !user;
+      badge.textContent = owner ? "владелец" : (isNolo ? "noloverme" : "");
+    }
+    if (seg) {
+      seg.hidden = !user;
+      seg.textContent = owner ? "(владелец)" : (isNolo ? "(noloverme)" : "");
+    }
     if (loginBtn) {
-      loginBtn.textContent = on ? "выйти" : "войти";
-      loginBtn.setAttribute("aria-label", on ? "Выйти из режима владельца" : "Войти в режим владельца");
+      loginBtn.textContent = user ? "выйти" : "войти";
+      loginBtn.setAttribute("aria-label", user ? ("Выйти (" + user + ")") : "Войти через консоль (команда login)");
+      loginBtn.title = user ? ("вошли как " + user) : "войти через консоль: команда login";
     }
     try {
-      if (on) sessionStorage.setItem(OWNER_KEY, "1");
+      if (user) sessionStorage.setItem(OWNER_KEY, user);
       else sessionStorage.removeItem(OWNER_KEY);
     } catch (e) { /* приватный режим */ }
     touchVisit();
     if (announce) {
-      if (on) {
+      if (owner) {
         print.line("доступ разрешён. добро пожаловать, " + (P.nick || "FOFPZ"), "accent");
         print.line("открыта команда: secret", "muted");
+      } else if (isNolo) {
+        print.line("привет, noloverme. вход без пароля — как договаривались.", "accent");
+        print.line("открыты команды: noloverme, info", "muted");
       } else {
-        print.line("сеанс владельца закрыт", "muted");
+        print.line("сеанс закрыт", "muted");
       }
       print.blank();
     }
   }
 
-  function tryLogin() {
-    var u = dlgUser.value.trim().toLowerCase();
-    var ok = u === AUTH.user && sha256hex(utf8Bytes(dlgPass.value)) === AUTH.passSha256;
-    if (ok) {
-      closeLogin();
-      setOwner(true, true);
-      setStatus("владелец в системе");
-    } else {
-      dlgMsg.textContent = "отказано в доступе";
-      dlgPass.value = "";
-      if (dlg) {
-        dlg.classList.remove("shake");
-        void dlg.offsetWidth;
-        dlg.classList.add("shake");
+  /* совместимость со старыми вызовами */
+  function setOwner(on, announce) {
+    setSession(on ? AUTH.user : null, announce);
+  }
+
+  function handleLoginInput(raw) {
+    if (loginStep === "user") {
+      var name = (raw || "").trim();
+      print.echo(name);
+      updateGhost();
+      if (!name) { cancelLogin(); return; }
+      pendingUser = name;
+      var low = name.toLowerCase();
+      if (low === NOLOVERME.user) {
+        /* без пароля */
+        loginStep = null;
+        pendingUser = "";
+        resetLoginPrompt();
+        setSession(NOLOVERME.user, true);
+        setStatus("noloverme в системе");
+        return;
       }
-      dlgPass.focus();
+      loginStep = "pass";
+      print.line("пароль для " + name + " (пустая строка — отмена):", "muted");
+      try { cmd.type = "password"; } catch (e) {}
+      cmd.placeholder = "пароль";
+      setStatus("введите пароль");
+      return;
+    }
+    if (loginStep === "pass") {
+      /* пароль в вывод не печатаем — только маска */
+      var masked = raw ? "••••••••" : "";
+      print.echo(masked);
+      updateGhost();
+      if (!raw) { cancelLogin(); return; }
+      var lowUser = (pendingUser || "").trim().toLowerCase();
+      var ok = (lowUser === AUTH.user && sha256hex(utf8Bytes(raw)) === AUTH.passSha256);
+      loginStep = null;
+      pendingUser = "";
+      resetLoginPrompt();
+      if (ok) {
+        setSession(AUTH.user, true);
+        setStatus("владелец в системе");
+      } else {
+        print.line("Неверные данные входа.", "err");
+        print.blank();
+        setStatus("отказано в доступе");
+      }
+      return;
     }
   }
 
-  if (dlgForm) {
-    dlgForm.addEventListener("submit", function (e) { e.preventDefault(); tryLogin(); });
-  }
-  if (dlgClose) dlgClose.addEventListener("click", closeLogin);
-  if (dlg) {
-    dlg.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closeLogin();
-    });
-  }
   if (loginBtn) {
     loginBtn.addEventListener("click", function () {
-      if (owner) { setOwner(false, true); }
+      if (typeof switchView === "function") switchView("terminal");
+      if (currentUser) { setSession(null, true); }
       else { openLogin(); }
       if (!booting && !cmd.disabled) cmd.focus();
     });
@@ -414,7 +491,8 @@
     if (!v) { v = { start: Date.now() }; j.visits.push(v); }
     v.end = Date.now();
     v.theme = root.getAttribute("data-theme") || v.theme || "green";
-    v.owner = owner;
+    v.owner = (typeof owner !== "undefined") ? owner : false;
+    v.user = (typeof currentUser !== "undefined" && currentUser) ? currentUser : "гость";
     if (j.visits.length > 100) j.visits = j.visits.slice(-100);
     journalSave(j);
   }
@@ -541,15 +619,24 @@
       a.target = "_blank";
       a.rel = "noopener noreferrer nofollow";
       info.appendChild(a);
-      info.appendChild(mk("span", "friend-tag", "telegram"));
+      info.appendChild(mk("span", "friend-tag", f.github ? "telegram · github" : "telegram"));
       row.appendChild(info);
       card.appendChild(row);
       if (f.note) card.appendChild(mk("p", "card-text", f.note));
+      var links = mk("div", "card-links");
       var tg = mk("a", "card-link", "написать в telegram →");
       tg.href = url;
       tg.target = "_blank";
       tg.rel = "noopener noreferrer nofollow";
-      card.appendChild(tg);
+      links.appendChild(tg);
+      if (f.github) {
+        var gh = mk("a", "card-link", "github →");
+        gh.href = f.github;
+        gh.target = "_blank";
+        gh.rel = "noopener noreferrer nofollow";
+        links.appendChild(gh);
+      }
+      card.appendChild(links);
       grid.appendChild(card);
     });
   }
@@ -613,6 +700,48 @@
     if (h > 0) return h + " ч " + (m % 60) + " мин";
     if (m > 0) return m + " мин " + (s % 60) + " с";
     return s + " с";
+  }
+
+  /* --- таймер до засекреченной даты --------------------------------------
+     Формат: год:дни:часы:минуты:секунды. Годы — полные календарные,
+     остаток — дни/часы/минуты/секунды. Дата берётся из profile.js. ----- */
+  function targetDate() {
+    var raw = (P.secretDate && P.secretDate.date) || "20.09.2027";
+    var m = String(raw).match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+    if (m) return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), 0, 0, 0);
+    var d = new Date(raw);
+    return isNaN(d.getTime()) ? new Date(2027, 8, 20, 0, 0, 0) : d;
+  }
+
+  function countdownParts(now) {
+    var t = targetDate();
+    var n = now || new Date();
+    if (n.getTime() >= t.getTime()) {
+      return { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+    }
+    var years = t.getFullYear() - n.getFullYear();
+    var anchor = new Date(n.getTime());
+    anchor.setFullYear(n.getFullYear() + years);
+    if (anchor.getTime() > t.getTime()) {
+      years--;
+      anchor = new Date(n.getTime());
+      anchor.setFullYear(n.getFullYear() + years);
+    }
+    var ms = t.getTime() - anchor.getTime();
+    var days = Math.floor(ms / 86400000); ms -= days * 86400000;
+    var hours = Math.floor(ms / 3600000); ms -= hours * 3600000;
+    var minutes = Math.floor(ms / 60000); ms -= minutes * 60000;
+    var seconds = Math.floor(ms / 1000);
+    return { years: years, days: days, hours: hours, minutes: minutes, seconds: seconds, expired: false };
+  }
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+  function countdownText(now) {
+    var c = countdownParts(now);
+    if (c.expired) return "срок вышел — доступ закрыт";
+    return "осталось: " + c.years + " г. : " + c.days + " дн. : " +
+      pad2(c.hours) + " ч. : " + pad2(c.minutes) + " мин. : " + pad2(c.seconds) + " с.";
   }
 
   var COMMANDS = {
@@ -685,6 +814,13 @@
         (P.privacy || []).forEach(function (t, i) { print.line((i + 1) + ". " + t); });
       }
     },
+    mask: {
+      d: "иконки анонимности",
+      run: function () {
+        if (P.icons && P.icons.length) print.icons(P.icons);
+        else print.line("иконок нет", "muted");
+      }
+    },
     neofetch: {
       d: "сводка о системе",
       run: function () {
@@ -727,6 +863,12 @@
         print.line(new Date().toLocaleString("ru-RU", { dateStyle: "full", timeStyle: "medium" }));
       }
     },
+    timer: {
+      d: "сколько осталось до 20.09.2027",
+      run: function () {
+        print.line(countdownText(), "accent");
+      }
+    },
     uptime: {
       d: "сколько длится сеанс",
       run: function () { print.line("сеанс: " + uptimeString()); }
@@ -753,14 +895,14 @@
       }
     },
     login: {
-      d: "войти в режим владельца",
+      d: "войти: имя и пароль прямо в консоли",
       run: function () { openLogin(); }
     },
     logout: {
-      d: "закрыть сеанс владельца",
+      d: "выйти из сеанса",
       run: function () {
-        if (!owner) { print.line("вы не входили", "muted"); return; }
-        setOwner(false, true);
+        if (!currentUser) { print.line("вы не входили", "muted"); return; }
+        setSession(null, true);
       }
     },
     matrix: {
@@ -793,10 +935,33 @@
       hidden: true,
       run: function () {
         if (!owner) {
-          print.line("сначала войдите: команда login или кнопка «войти» в шапке", "warn");
+          print.line("сначала войдите: команда login, имя fofpz", "warn");
           return;
         }
         (P.ownerNote || []).forEach(function (t) { print.line(t); });
+      }
+    },
+    noloverme: {
+      d: "привет от noloverme",
+      hidden: true,
+      run: function () {
+        if (currentUser !== NOLOVERME.user && !owner) {
+          print.line("доступно после входа как noloverme (команда login)", "warn");
+          return;
+        }
+        print.line("Зачем ты написал себя в чат?", "accent");
+      }
+    },
+    info: {
+      d: "info от noloverme",
+      hidden: true,
+      run: function () {
+        if (currentUser !== NOLOVERME.user && !owner) {
+          print.line("доступно после входа как noloverme (команда login)", "warn");
+          return;
+        }
+        print.line("Ты писька :)", "accent");
+        print.link("github.com/noloverme", NOLOVERME.github, "github noloverme");
       }
     },
     who: {
@@ -805,7 +970,10 @@
         print.section("кто на сайте");
         var j = journal();
         var v = j.visits[j.visits.length - 1] || { start: Date.now() };
-        print.kv("статус", owner ? "владелец" : "гость");
+        var status = "гость";
+        if (owner) status = "владелец";
+        else if (currentUser === NOLOVERME.user) status = "noloverme";
+        print.kv("статус", status);
         print.kv("визит номер", String(j.visits.length));
         print.kv("сеанс начат", fmtDate(v.start));
         print.kv("длительность", fmtDur(Date.now() - v.start));
@@ -836,8 +1004,9 @@
         if (!j.visits.length) { print.line("визитов не записано", "muted"); return; }
         print.line("хранится только в этом браузере:", "muted");
         j.visits.slice(-10).forEach(function (v) {
+          var who = v.user || (v.owner ? "fofpz" : "гость");
           print.kv(fmtDate(v.start), fmtDur((v.end || v.start) - v.start) +
-            (v.owner ? " · владелец" : "") + " · " + (THEME_NAMES[v.theme] || v.theme));
+            " · " + who + " · " + (THEME_NAMES[v.theme] || v.theme));
         });
       }
     },
@@ -895,8 +1064,9 @@
     ["связи",             ["links", "contact"]],
     ["анонимность",       ["privacy", "mask"]],
     ["журнал (локально)", ["who", "history", "sessions", "journal"]],
-    ["владелец",          ["login", "logout", "secret"]],
-    ["система",           ["ls", "cat", "echo", "date", "uptime", "theme", "log", "clear", "exit"]]
+    ["вход",              ["login", "logout", "secret"]],
+    ["noloverme",         ["noloverme", "info"]],
+    ["система",           ["ls", "cat", "echo", "date", "timer", "uptime", "theme", "log", "clear", "exit"]]
   ];
 
   /* --- выполнение -------------------------------------------------------- */
@@ -914,6 +1084,13 @@
 
   function run(raw) {
     finishNow();
+    /* ввод имени/пароля во время login — не команда, в историю не пишем */
+    if (loginStep) {
+      handleLoginInput(raw);
+      cmd.value = "";
+      updateGhost();
+      return;
+    }
     var line = raw.trim();
     print.echo(line);
     updateGhost();
@@ -963,6 +1140,13 @@
   cmd.addEventListener("keydown", function (e) {
     if (booting) { skipBoot(); return; }
 
+    if (e.key === "Escape" && loginStep) {
+      e.preventDefault();
+      cmd.value = "";
+      cancelLogin();
+      updateGhost();
+      return;
+    }
     if (e.key === "Enter") {
       e.preventDefault();
       var value = cmd.value;
@@ -970,9 +1154,11 @@
       run(value);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
+      if (loginStep) return;
       if (historyIndex > 0) { historyIndex--; cmd.value = history[historyIndex]; }
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
+      if (loginStep) return;
       if (historyIndex < history.length - 1) {
         historyIndex++;
         cmd.value = history[historyIndex];
@@ -982,11 +1168,11 @@
       }
     } else if (e.key === "Tab") {
       e.preventDefault();
-      complete();
+      if (!loginStep) complete();
       updateGhost();
     } else if (e.key === "ArrowRight" && cmd.selectionStart === cmd.value.length) {
       e.preventDefault();
-      complete();
+      if (!loginStep) complete();
       updateGhost();
     } else if (e.key === "l" && e.ctrlKey) {
       e.preventDefault();
@@ -1014,6 +1200,7 @@
 
   function updateGhost() {
     if (!ghost) return;
+    if (typeof loginStep !== "undefined" && loginStep) { ghost.textContent = ""; return; }
     var typed = cmd.value;
     var v = typed.trim().toLowerCase();
     var g = "";
@@ -1252,19 +1439,18 @@
     })();
   }
 
+  /* --- таймер под датой: живой отсчёт до 20.09.2027 ----------------------
+     Секретная строка убрана по просьбе: вместо неё — год:дни:часы:мин:сек.
+     Обновляется каждую секунду, это информация, а не анимация, поэтому
+     работает и при prefers-reduced-motion. ------------------------------- */
   function startSecretLine2() {
-    var cfg = P.secretDate || {};
     var l2 = document.getElementById("secret-line2");
-    var text = cfg.line2 || "";
     if (!l2) return;
-    if (reduce || !ANIM.enabled) { l2.textContent = text; return; }
-    setTimeout(function () {
-      var i = 0;
-      (function step() {
-        l2.textContent = text.slice(0, ++i);
-        if (i < text.length) setTimeout(step, 48);
-      })();
-    }, 900);
+    function tickCountdown() {
+      l2.textContent = countdownText();
+    }
+    tickCountdown();
+    setInterval(tickCountdown, 1000);
   }
 
   /* --- автозагрузка ------------------------------------------------------ */
@@ -1363,11 +1549,13 @@
     print.line("введите help, чтобы увидеть все команды", "hint");
     print.blank();
 
-    var savedOwner = false;
-    try { savedOwner = sessionStorage.getItem(OWNER_KEY) === "1"; } catch (e) {}
-    if (savedOwner) {
-      setOwner(true, false);
-      print.line("сеанс владельца восстановлен", "muted");
+    var savedUser = null;
+    try { savedUser = sessionStorage.getItem(OWNER_KEY); } catch (e) {}
+    /* совместимость: раньше флаг был "1" — это fofpz */
+    if (savedUser === "1") savedUser = AUTH.user;
+    if (savedUser === AUTH.user || savedUser === NOLOVERME.user) {
+      setSession(savedUser, false);
+      print.line("сеанс восстановлен: " + savedUser, "muted");
       print.blank();
     }
 

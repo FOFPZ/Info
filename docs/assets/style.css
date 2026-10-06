@@ -666,6 +666,8 @@ body::after {
 }
 #cmd::placeholder { color: var(--dim); opacity: 0.7; }
 #cmd:disabled { color: var(--dim); }
+/* ввод пароля при login: поле переключается в type=password */
+#cmd[type="password"] { letter-spacing: 0.18em; }
 
 .cmd-echo { margin-top: 0.55rem; }
 .cmd-echo:not(:first-child) {
@@ -784,6 +786,8 @@ body::after {
   font-size: 0.85rem;
   font-style: italic;
   opacity: 0.85;
+  /* таймер обновляется каждую секунду — моноширинные цифры не дёргаются */
+  font-variant-numeric: tabular-nums;
 }
 .secret-caret {
   display: inline-block;
