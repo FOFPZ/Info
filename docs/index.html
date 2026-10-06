@@ -20,7 +20,7 @@
   <meta property="og:image" content="https://fofpz.github.io/Info/assets/og.png">
 
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=13">
+  <link rel="stylesheet" href="assets/style.css?v=14">
 </head>
 
 <body>
@@ -37,6 +37,7 @@
     </nav>
     <div class="nav-actions">
       <button id="login-btn" class="ghost-btn" type="button" aria-label="Войти в режим владельца">войти</button>
+      <button id="theme-btn" class="ghost-btn" type="button" title="Сменить тему" aria-label="Сменить тему оформления">◐</button>
     </div>
   </header>
 
@@ -45,22 +46,6 @@
 
     <!-- ================= ТЕРМИНАЛ ================= -->
     <section id="view-terminal" class="view">
-      <div class="monitor">
-        <div class="monitor-top">
-          <span class="monitor-brand">fofpz tron · 14″ · rev 13</span>
-          <span class="tray">
-            <i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span><span class="badge" id="owner-badge" hidden>владелец</span>
-            <span class="sep"> · </span><span id="theme-name">phosphor-green</span>
-            <span class="sep"> · </span><time id="clock">--:--:--</time>
-          </span>
-          <span class="monitor-btns">
-            <button class="m-btn" id="m-glare" type="button" title="блик экрана">◍</button>
-            <button class="m-btn" id="m-theme" type="button" title="цвет экрана">◐</button>
-            <i class="m-led" id="m-led" aria-hidden="true"></i>
-          </span>
-        </div>
-
-      <div class="screen-well">
       <section class="terminal glass" aria-label="Терминал">
         <header class="titlebar">
           <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -82,14 +67,12 @@
           </form>
         </div>
 
+        <footer class="statusbar">
+          <span class="status-left"><i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span><span class="badge" id="owner-badge" hidden>владелец</span></span>
+          <span class="hint-cell">help — список команд · страница ничего не собирает</span>
+          <span class="right"><span id="theme-name">phosphor-green</span><span class="sep"> · </span><time id="clock">--:--:--</time></span>
+        </footer>
       </section>
-
-        <div class="monitor-chin">
-          <span class="vents" aria-hidden="true"></span>
-          <span class="chin-label">help — список команд · страница ничего не собирает</span>
-        </div>
-      </div>
-      <div class="monitor-stand" aria-hidden="true"><i class="neck"></i><i class="base"></i></div>
 
       <p class="keys">
         <kbd>Enter</kbd> выполнить ·
@@ -160,7 +143,7 @@
     </div>
   </noscript>
 
-  <script src="assets/profile.js?v=13"></script>
-  <script src="assets/app.js?v=13"></script>
+  <script src="assets/profile.js?v=14"></script>
+  <script src="assets/app.js?v=14"></script>
 </body>
 </html>

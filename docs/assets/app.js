@@ -763,6 +763,31 @@
         setOwner(false, true);
       }
     },
+    matrix: {
+      hidden: true,
+      run: function () {
+        print.line("подключаюсь к дождю…", "muted");
+        matrixFx();
+      }
+    },
+    "42": {
+      hidden: true,
+      run: function () {
+        print.line("42. ответ готов, вопрос за вами.", "accent");
+      }
+    },
+    привет: {
+      hidden: true,
+      run: function () {
+        print.line("и здравствуйте. редкий случай, когда терминал приветствуют.", "warn");
+      }
+    },
+    coffee: {
+      hidden: true,
+      run: function () {
+        print.line("☕ налито. локально, без выхода из браузера.", "muted");
+      }
+    },
     secret: {
       d: "заметка владельца",
       hidden: true,
@@ -1019,21 +1044,79 @@
     });
   }
 
-  /* кнопки на мониторе: тема и блик ---------------------------------------- */
-  var mTheme = document.getElementById("m-theme");
-  var mGlare = document.getElementById("m-glare");
-  if (mTheme) {
-    mTheme.addEventListener("click", function () {
-      var i = THEMES.indexOf(root.getAttribute("data-theme"));
-      setTheme(THEMES[(i + 1) % THEMES.length], !booting);
-    });
+  /* --- пасхалки ----------------------------------------------------------- */
+  function matrixFx() {
+    var scr = document.getElementById("screen");
+    if (!scr) return;
+    if (reduce) { print.line("дождь отключён настройкой уменьшенного движения.", "muted"); return; }
+    var cv = document.createElement("canvas");
+    cv.className = "matrix-fx";
+    scr.appendChild(cv);
+    var ctx = cv.getContext ? cv.getContext("2d") : null;
+    if (!ctx) {
+      if (cv.remove) cv.remove(); else scr.removeChild(cv);
+      print.line("дождь не пришёл: браузер без канваса.", "muted");
+      return;
+    }
+    cv.width = scr.clientWidth || 600;
+    cv.height = scr.clientHeight || 400;
+    var cols = Math.max(8, Math.floor(cv.width / 10));
+    var y = [];
+    for (var i = 0; i < cols; i++) y.push(Math.floor(Math.random() * -20));
+    var glyphs = "01@#$%&<>!ｱｲｳｴｵｶｷｸ";
+    var t0 = Date.now();
+    (function frame() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.14)";
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.fillStyle = getComputedStyle(root).getPropertyValue("--accent") || "#4dff9b";
+      ctx.font = "12px monospace";
+      for (var c = 0; c < cols; c++) {
+        ctx.fillText(glyphs.charAt(Math.floor(Math.random() * glyphs.length)), c * 10, y[c] * 12);
+        if (y[c] * 12 > cv.height && Math.random() > 0.975) y[c] = 0;
+        y[c]++;
+      }
+      if (Date.now() - t0 < 2800) requestAnimationFrame(frame);
+      else {
+        if (cv.remove) cv.remove(); else scr.removeChild(cv);
+        print.line("дождь закончился. проснись, fofpz.", "muted");
+      }
+    })();
   }
-  if (mGlare) {
-    mGlare.addEventListener("click", function () {
-      var t = document.querySelector(".terminal");
-      if (!t) return;
-      t.classList.toggle("no-glare");
-      mGlare.classList.toggle("off", t.classList.contains("no-glare"));
+
+  function disco() {
+    print.line("пасхалка разблокирована: режим дискотеки.", "accent");
+    if (reduce) return;
+    var before = root.getAttribute("data-theme");
+    var n = 0;
+    var iv = setInterval(function () {
+      setTheme(THEMES[n % THEMES.length], false);
+      if (++n >= 10) { clearInterval(iv); setTheme(before, false); }
+    }, 650);
+  }
+
+  var KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown",
+                "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+  var kpos = 0;
+  document.addEventListener("keydown", function (e) {
+    var k = e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (k === KONAMI[kpos]) {
+      kpos++;
+      if (kpos === KONAMI.length) { kpos = 0; disco(); }
+    } else {
+      kpos = (k === KONAMI[0]) ? 1 : 0;
+    }
+  });
+
+  var logoClicks = 0;
+  var logoEl = document.querySelector(".brand-logo");
+  if (logoEl) {
+    logoEl.addEventListener("click", function () {
+      logoClicks++;
+      if (logoClicks === 7) {
+        logoClicks = 0;
+        switchView("terminal");
+        print.line("семь кликов по лого. терминал помнит добро.", "warn");
+      }
     });
   }
 
@@ -1120,27 +1203,47 @@
   /* --- засекреченная дата: живые символы вместо знаков вопроса ----------- */
   function initSecretDate() {
     var cfg = P.secretDate || {};
-    var pattern = cfg.pattern || "??.??.????";
+    var target = cfg.date || "20.09.2027";
     var el = document.getElementById("secret-date");
     var l1 = document.getElementById("secret-line1");
-    var l2 = document.getElementById("secret-line2");
-    var pool = "!@#$%&*?<>^~0123456789XYZF";
+    var pool = "@#$%!&<>";
 
     if (l1) l1.textContent = cfg.line1 || "";
+    if (!el) return;
 
-    function scramble() {
-      if (!el) return;
+    var digits = [];
+    for (var i = 0; i < target.length; i++) {
+      if (target.charAt(i) !== ".") digits.push(i);
+    }
+    var opened = 0;
+
+    function rnd() { return pool.charAt(Math.floor(Math.random() * pool.length)); }
+
+    function draw() {
       var out = "";
-      for (var i = 0; i < pattern.length; i++) {
-        var ch = pattern.charAt(i);
-        out += ch === "?" ? pool.charAt(Math.floor(Math.random() * pool.length)) : ch;
+      for (var i = 0; i < target.length; i++) {
+        var ch = target.charAt(i);
+        if (ch === ".") { out += "."; continue; }
+        out += digits.indexOf(i) < opened ? ch : rnd();
       }
       el.textContent = out;
     }
 
-    scramble();
-    if (!reduce) setInterval(scramble, 700);
+    draw();
+    if (reduce) return;
 
+    /* скрытые места шевелятся символами */
+    setInterval(draw, 600);
+
+    /* по одной цифре, в конце пауза — и круг заново */
+    (function step() {
+      setTimeout(function () {
+        var full = opened >= digits.length;
+        opened = full ? 0 : opened + 1;
+        draw();
+        step();
+      }, opened >= digits.length ? 5200 : 2600);
+    })();
   }
 
   /* вторая строка секретной даты печатается после завершения загрузки */
