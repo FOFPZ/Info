@@ -203,6 +203,23 @@
         (P.about || []).forEach(function (t) { print.line(t); print.blank(); });
       }
     },
+    projects: {
+      d: "мои проекты",
+      run: function () {
+        var list = P.projects || [];
+        if (!list.length) { print.line("не публикуются", "muted"); return; }
+        list.forEach(function (p) {
+          var head = mk("div", "line proj-head");
+          head.appendChild(mk("span", "accent", p.name));
+          if (p.status) head.appendChild(mk("span", "muted", " · " + p.status));
+          output.appendChild(head);
+          print.line(p.desc);
+          if (p.tags && p.tags.length) print.tags(p.tags);
+          if (p.url) print.link(p.url.replace(/^https?:\/\//, ""), p.url);
+          print.blank();
+        });
+      }
+    },
     skills: {
       d: "навыки и уровни",
       run: function () {
@@ -315,9 +332,10 @@
 
   /* файлы для ls/cat → команды */
   var FILES = {
-    "whoami.txt":  "whoami",
-    "about.txt":   "about",
-    "skills.txt":  "skills",
+    "whoami.txt":   "whoami",
+    "about.txt":    "about",
+    "projects.txt": "projects",
+    "skills.txt":   "skills",
     "stack.txt":   "stack",
     "links.txt":   "links",
     "contact.txt": "contact",
