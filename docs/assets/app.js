@@ -42,6 +42,7 @@
     if (themeEl) themeEl.textContent = THEME_NAMES[name];
     if (themeBtn) themeBtn.setAttribute("aria-label", "Тема: " + THEME_NAMES[name] + " (сменить)");
     try { localStorage.setItem(STORE_KEY, name); } catch (e) { /* приватный режим */ }
+    touchVisit();
     if (announce) print.line("тема: " + THEME_NAMES[name], "muted");
   }
 
@@ -254,6 +255,7 @@
       if (on) sessionStorage.setItem(OWNER_KEY, "1");
       else sessionStorage.removeItem(OWNER_KEY);
     } catch (e) { /* приватный режим */ }
+    touchVisit();
     if (announce) {
       if (on) {
         print.line("доступ разрешён. добро пожаловать, " + (P.nick || "FOFPZ"), "accent");
@@ -299,6 +301,65 @@
       else { openLogin(); }
       if (!booting && !cmd.disabled) cmd.focus();
     });
+  }
+
+  /* --- журнал сеансов -----------------------------------------------------
+     Хранится ТОЛЬКО в localStorage браузера текущего посетителя и никуда
+     не отправляется. Каждый видит лишь собственный журнал: владелец —
+     свой, гость — свой. Узнать чужих посетителей статичная страница без
+     внешней аналитики не может.
+     ---------------------------------------------------------------------- */
+  var JKEY = "fofpz-journal";
+
+  function journal() {
+    try {
+      var j = JSON.parse(localStorage.getItem(JKEY) || "null");
+      if (!j || typeof j !== "object") j = { visits: [], cmds: [] };
+      if (!Array.isArray(j.visits)) j.visits = [];
+      if (!Array.isArray(j.cmds)) j.cmds = [];
+      return j;
+    } catch (e) {
+      return { visits: [], cmds: [] };
+    }
+  }
+
+  function journalSave(j) {
+    try { localStorage.setItem(JKEY, JSON.stringify(j)); } catch (e) {}
+  }
+
+  function touchVisit() {
+    var j = journal();
+    var v = j.visits[j.visits.length - 1];
+    if (!v) { v = { start: Date.now() }; j.visits.push(v); }
+    v.end = Date.now();
+    v.theme = root.getAttribute("data-theme") || v.theme || "green";
+    v.owner = owner;
+    if (j.visits.length > 100) j.visits = j.visits.slice(-100);
+    journalSave(j);
+  }
+
+  function fmtDate(ts) {
+    return new Date(ts).toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "medium" });
+  }
+
+  function fmtDur(ms) {
+    var s = Math.max(0, Math.round(ms / 1000));
+    if (s < 60) return s + " с";
+    return Math.floor(s / 60) + " мин " + (s % 60) + " с";
+  }
+
+  function browserName() {
+    var ua = navigator.userAgent || "";
+    function pick(re, name) {
+      var m = ua.match(re);
+      return m ? name + " " + String(m[1]).split(".")[0] : null;
+    }
+    return pick(/Edg\/([\d.]+)/, "edge") ||
+           pick(/OPR\/([\d.]+)/, "opera") ||
+           pick(/Firefox\/([\d.]+)/, "firefox") ||
+           pick(/Chrome\/([\d.]+)/, "chrome") ||
+           pick(/Version\/([\d.]+).*Safari/, "safari") ||
+           "неизвестен";
   }
 
   /* --- ascii-лого -------------------------------------------------------- */
@@ -499,6 +560,72 @@
         (P.ownerNote || []).forEach(function (t) { print.line(t); });
       }
     },
+    who: {
+      d: "кто сейчас на сайте (этот браузер)",
+      run: function () {
+        var j = journal();
+        var v = j.visits[j.visits.length - 1] || { start: Date.now() };
+        print.kv("статус", owner ? "владелец" : "гость");
+        print.kv("визит номер", String(j.visits.length));
+        print.kv("сеанс начат", fmtDate(v.start));
+        print.kv("длительность", fmtDur(Date.now() - v.start));
+        print.kv("тема", THEME_NAMES[root.getAttribute("data-theme")] || "-");
+        print.kv("браузер", browserName());
+        print.kv("экран", window.innerWidth + "x" + window.innerHeight);
+        print.line("журнал хранится только в этом браузере и никуда не уходит", "muted");
+      }
+    },
+    history: {
+      d: "history [N] — журнал команд этого браузера",
+      run: function (args) {
+        var j = journal();
+        var n = parseInt(args[0], 10) || 30;
+        if (!j.cmds.length) { print.line("журнал команд пуст", "muted"); return; }
+        print.line("последние команды (хранятся только здесь):", "muted");
+        j.cmds.slice(-n).forEach(function (e) {
+          print.kv(new Date(e.t).toLocaleTimeString("ru-RU", { hour12: false }), e.c);
+        });
+      }
+    },
+    sessions: {
+      d: "история визитов этого браузера",
+      run: function () {
+        var j = journal();
+        if (!j.visits.length) { print.line("визитов не записано", "muted"); return; }
+        print.line("последние визиты (хранятся только здесь):", "muted");
+        j.visits.slice(-10).forEach(function (v) {
+          print.kv(fmtDate(v.start), fmtDur((v.end || v.start) - v.start) +
+            (v.owner ? " · владелец" : "") + " · " + (THEME_NAMES[v.theme] || v.theme));
+        });
+      }
+    },
+    journal: {
+      d: "journal clear|export — управление журналом",
+      run: function (args) {
+        var sub = (args[0] || "").toLowerCase();
+        if (sub === "clear") {
+          try { localStorage.removeItem(JKEY); } catch (e) {}
+          print.line("журнал очищен", "muted");
+          return;
+        }
+        if (sub === "export") {
+          try {
+            var blob = new Blob([JSON.stringify(journal(), null, 2)], { type: "application/json" });
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "fofpz-journal.json";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+            print.line("файл журнала скачан", "muted");
+          } catch (e) {
+            print.line("браузер не дал скачать файл: " + e.message, "err");
+          }
+          return;
+        }
+        print.line("использование: journal clear | journal export", "muted");
+      }
+    },
     sudo: {
       d: "не рекомендуется",
       hidden: true,
@@ -531,6 +658,12 @@
 
     history.push(line);
     historyIndex = history.length;
+
+    var j = journal();
+    j.cmds.push({ t: Date.now(), c: line });
+    if (j.cmds.length > 500) j.cmds = j.cmds.slice(-500);
+    journalSave(j);
+    touchVisit();
 
     var parts = line.split(/\s+/);
     var name = parts[0].toLowerCase();
@@ -615,6 +748,8 @@
       if (!booting) cmd.focus();
     });
   }
+
+  window.addEventListener("beforeunload", touchVisit);
 
   /* --- часы в строке состояния ------------------------------------------ */
   function tick() {
