@@ -33,8 +33,11 @@
   }
 
   /* --- темы -------------------------------------------------------------- */
-  var THEMES = ["green", "amber", "ice"];
-  var THEME_NAMES = { green: "phosphor-green", amber: "phosphor-amber", ice: "cold-ice" };
+  var THEMES = ["green", "amber", "ice", "violet", "crimson", "paper"];
+  var THEME_NAMES = {
+    green: "phosphor-green", amber: "phosphor-amber", ice: "cold-ice",
+    violet: "purple-moon", crimson: "crimson-alert", paper: "paper-white"
+  };
   var STORE_KEY = "fofpz-theme";
 
   function setTheme(name, announce) {
@@ -162,6 +165,22 @@
       a.rel = "noopener noreferrer nofollow";
       el.appendChild(a);
       if (note) el.appendChild(mk("span", "note", "\u2014 " + note));
+      output.appendChild(el); trim(); scrollDown();
+      return el;
+    },
+    icons: function (items) {
+      var el = mk("div", "line icons-row" + revealCls());
+      items.forEach(function (it) {
+        var wrap = mk("span", "ticon-wrap");
+        var s = mk("span", "ticon");
+        var url = "assets/icons/" + it.file;
+        s.style.maskImage = "url(" + url + ")";
+        s.style.webkitMaskImage = "url(" + url + ")";
+        s.setAttribute("title", it.label || it.file);
+        wrap.appendChild(s);
+        wrap.appendChild(mk("span", "ticon-label", it.label || it.file));
+        el.appendChild(wrap);
+      });
       output.appendChild(el); trim(); scrollDown();
       return el;
     },
@@ -483,6 +502,15 @@
           if (p.url) print.link(p.url.replace(/^https?:\/\//, ""), p.url);
           print.blank();
         });
+      }
+    },
+    mask: {
+      d: "иконки анонимности",
+      run: function () {
+        var list = P.icons || [];
+        if (!list.length) { print.line("иконок нет", "muted"); return; }
+        print.line("символы анонимности:", "muted");
+        print.icons(list);
       }
     },
     friend: {
@@ -1002,6 +1030,7 @@
     print.blank();
     print.ascii(logo());
     print.line("анонимная визитка · " + (P.role || "аноним"), "muted");
+    if (P.icons && P.icons.length) print.icons(P.icons);
     print.blank();
 
     await typeCommand("whoami");

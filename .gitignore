@@ -30,3 +30,6 @@ yarn-error.log*
 __pycache__/
 *.py[cod]
 .venv/
+
+# артефакты инструментов поиска изображений
+image-search/

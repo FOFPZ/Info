@@ -47,6 +47,56 @@
   --tag-bg:    rgba(121, 200, 255, 0.08);
 }
 
+/* фиолетовая: отсылка к Purple Moon из Luna Launcher */
+[data-theme="violet"] {
+  --bg:        #0a0612;
+  --panel:     #120b20;
+  --panel-2:   #1a1030;
+  --fg:        #e6dcff;
+  --dim:       #8a76b8;
+  --accent:    #b18cff;
+  --warn:      #ffd166;
+  --err:       #ff7ab8;
+  --frame:     #3d2a66;
+  --glow:      rgba(177, 140, 255, 0.35);
+  --tag-bg:    rgba(177, 140, 255, 0.08);
+}
+
+/* багровая: тревожная красная */
+[data-theme="crimson"] {
+  --bg:        #0d0406;
+  --panel:     #160809;
+  --panel-2:   #200b0e;
+  --fg:        #ffdce0;
+  --dim:       #a05a63;
+  --accent:    #ff5c6c;
+  --warn:      #ffd166;
+  --err:       #ff9e64;
+  --frame:     #5c1f28;
+  --glow:      rgba(255, 92, 108, 0.35);
+  --tag-bg:    rgba(255, 92, 108, 0.08);
+}
+
+/* светлая: бумага без свечения */
+[data-theme="paper"] {
+  --bg:        #e9e5da;
+  --panel:     #f4f1e8;
+  --panel-2:   #e2ddcf;
+  --fg:        #232019;
+  --dim:       #6d675a;
+  --accent:    #0f7a4d;
+  --warn:      #8a6100;
+  --err:       #b3261e;
+  --frame:     #b7b0a0;
+  --glow:      rgba(0, 0, 0, 0);
+  --tag-bg:    rgba(15, 122, 77, 0.08);
+}
+
+[data-theme="paper"] body::after { opacity: 0.14; }
+[data-theme="paper"] body::before {
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.16) 100%);
+}
+
 /* --- база ---------------------------------------------------------------- */
 * { box-sizing: border-box; }
 
@@ -494,6 +544,29 @@ kbd {
   25%      { transform: translateX(-6px); }
   75%      { transform: translateX(6px); }
 }
+
+/* иконки анонимности в выводе (маска красится цветом темы) */
+.icons-row {
+  display: flex;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin: 0.4rem 0;
+}
+.ticon-wrap { display: inline-flex; align-items: center; gap: 0.45rem; }
+.ticon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  -webkit-mask-size: contain;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-size: contain;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  filter: drop-shadow(0 0 6px var(--glow));
+}
+.ticon-label { color: var(--dim); font-size: 0.85em; }
 
 /* --- доступность --------------------------------------------------------- */
 ::selection { background: var(--accent); color: var(--bg); }
