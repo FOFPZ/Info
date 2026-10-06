@@ -398,120 +398,139 @@ body::after {
 }
 .terminal.no-glare::after { animation: none; opacity: 0; }
 
-/* --- монитор: корпус, кнопки, ножка -------------------------------------- */
+/* --- монитор: светлый crt-корпус, кнопки, ножка --------------------------- */
 .monitor {
   position: relative;
-  background: linear-gradient(180deg, #262b31 0%, #14171b 55%, #0b0d10 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 0.5rem 0.7rem 0.8rem;
+  background: linear-gradient(180deg, #e6e3d9 0%, #c9c6bb 45%, #a5a299 100%);
+  border: 1px solid #85827a;
+  border-radius: 26px;
+  padding: 0.7rem 1.1rem 1rem;
   box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.09),
-    inset 0 -16px 34px rgba(0, 0, 0, 0.5);
+    0 34px 90px rgba(0, 0, 0, 0.75),
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -18px 40px rgba(0, 0, 0, 0.25);
 }
 /* винты по углам рамки */
 .monitor::before {
   content: "";
   position: absolute;
-  inset: 7px;
+  inset: 8px;
   pointer-events: none;
-  border-radius: 18px;
+  border-radius: 20px;
   background:
-    radial-gradient(circle 3px at 6px 6px, rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px),
-    radial-gradient(circle 3px at calc(100% - 6px) 6px, rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px),
-    radial-gradient(circle 3px at 6px calc(100% - 6px), rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px),
-    radial-gradient(circle 3px at calc(100% - 6px) calc(100% - 6px), rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px);
+    radial-gradient(circle 3px at 7px 7px, rgba(255, 255, 255, 0.9) 0 1.5px, rgba(0, 0, 0, 0.45) 2px, transparent 3px),
+    radial-gradient(circle 3px at calc(100% - 7px) 7px, rgba(255, 255, 255, 0.9) 0 1.5px, rgba(0, 0, 0, 0.45) 2px, transparent 3px),
+    radial-gradient(circle 3px at 7px calc(100% - 7px), rgba(255, 255, 255, 0.9) 0 1.5px, rgba(0, 0, 0, 0.45) 2px, transparent 3px),
+    radial-gradient(circle 3px at calc(100% - 7px) calc(100% - 7px), rgba(255, 255, 255, 0.9) 0 1.5px, rgba(0, 0, 0, 0.45) 2px, transparent 3px);
 }
 .monitor-top {
   display: flex;
   align-items: center;
   gap: 0.8rem;
   flex-wrap: wrap;
-  padding: 0.1rem 0.25rem 0.55rem;
+  padding: 0.1rem 0.3rem 0.6rem;
 }
 .monitor-brand {
-  color: #828a94;
+  color: #56534b;
   font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 .tray {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
-  color: var(--dim);
+  color: #4a473f;
   font-size: 0.74rem;
   letter-spacing: 0.02em;
 }
 .monitor-btns { display: flex; align-items: center; gap: 0.45rem; }
 .m-btn {
-  width: 26px;
-  height: 26px;
+  width: 27px;
+  height: 27px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: radial-gradient(circle at 35% 30%, #3a4149, #171a1e 70%);
-  color: var(--dim);
+  border: 1px solid #6b6860;
+  background: radial-gradient(circle at 35% 30%, #4a4f57, #22262b 70%);
+  color: #cfd8d2;
   font-size: 0.78rem;
   line-height: 1;
   cursor: pointer;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 2px 4px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 2px 5px rgba(0, 0, 0, 0.45);
 }
 .m-btn:hover { color: var(--accent); }
 .m-btn.off { opacity: 0.45; }
 .m-led {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 10px var(--glow);
+  box-shadow: 0 0 10px var(--glow), inset 0 0 2px rgba(0, 0, 0, 0.6);
   animation: pulse 2.4s infinite;
 }
+/* утопленный экран: чёрная шахта вокруг стекла */
+.screen-well {
+  background: #050607;
+  border-radius: 16px;
+  padding: 10px;
+  box-shadow:
+    inset 0 0 0 2px #17181a,
+    inset 0 10px 40px rgba(0, 0, 0, 0.95),
+    0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.screen-well .terminal { border-radius: 10px; }
 .monitor-chin {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.6rem 0.3rem 0;
-  color: #6b737c;
+  padding: 0.65rem 0.3rem 0;
+  color: #56534b;
   font-size: 0.7rem;
   letter-spacing: 0.06em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 .vents {
   flex: 0 1 180px;
   height: 6px;
   border-radius: 3px;
-  opacity: 0.5;
-  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0 2px, transparent 2px 6px);
+  opacity: 0.55;
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0 2px, transparent 2px 6px);
 }
 .monitor-stand { display: flex; flex-direction: column; align-items: center; }
 .monitor-stand .neck {
-  width: 84px;
-  height: 40px;
-  background: linear-gradient(180deg, #1a1e23, #0b0d10);
+  width: 92px;
+  height: 44px;
+  background: linear-gradient(180deg, #b7b4aa, #8b887f);
   clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.35);
 }
 .monitor-stand .base {
-  width: 230px;
-  height: 12px;
+  width: 250px;
+  height: 14px;
   margin-top: -1px;
-  border-radius: 6px;
-  background: linear-gradient(180deg, #22272c, #0a0c0e);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+  border-radius: 7px;
+  background: linear-gradient(180deg, #cfccc2, #96938a);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
+/* на светлой теме монитор, наоборот, тёмный */
 [data-theme="paper"] .monitor {
-  background: linear-gradient(180deg, #e8e6df 0%, #cfccc2 60%, #b8b5ab 100%);
-  border-color: rgba(0, 0, 0, 0.16);
+  background: linear-gradient(180deg, #3d4249 0%, #23272c 55%, #14171a 100%);
+  border-color: #0e1013;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.14);
 }
 [data-theme="paper"] .monitor-brand,
-[data-theme="paper"] .monitor-chin { color: #6a675e; }
+[data-theme="paper"] .monitor-chin { color: #9aa1a9; text-shadow: none; }
+[data-theme="paper"] .tray { color: #9aa1a9; }
 [data-theme="paper"] .m-btn {
   background: radial-gradient(circle at 35% 30%, #fdfcf8, #d8d5cb 70%);
-  border-color: rgba(0, 0, 0, 0.2);
+  color: #3c3a34;
+  border-color: #0e1013;
 }
-[data-theme="paper"] .monitor-stand .neck { background: linear-gradient(180deg, #d9d6cc, #b5b2a8); }
-[data-theme="paper"] .monitor-stand .base { background: linear-gradient(180deg, #cfccc2, #a9a69c); }
+[data-theme="paper"] .vents { background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0 2px, transparent 2px 6px); }
+[data-theme="paper"] .monitor-stand .neck { background: linear-gradient(180deg, #2c3138, #171a1e); }
+[data-theme="paper"] .monitor-stand .base { background: linear-gradient(180deg, #34393f, #1a1d21); }
 
 /* --- лог сайта ------------------------------------------------------------ */
 .log-list {
