@@ -1215,7 +1215,14 @@
     for (var i = 0; i < target.length; i++) {
       if (target.charAt(i) !== ".") digits.push(i);
     }
-    var opened = 0;
+
+    /* сценарий круга: сначала прожектор по одной цифре (2@.@#… -> @#.0@.…),
+       потом цифры накапливаются слева направо, пауза — и по новой -------- */
+    var seq = [];
+    digits.forEach(function (d) { seq.push([d]); });
+    for (var k = 1; k <= digits.length; k++) seq.push(digits.slice(0, k));
+    var cur = [];
+    var si = 0;
 
     function rnd() { return pool.charAt(Math.floor(Math.random() * pool.length)); }
 
@@ -1224,7 +1231,7 @@
       for (var i = 0; i < target.length; i++) {
         var ch = target.charAt(i);
         if (ch === ".") { out += "."; continue; }
-        out += digits.indexOf(i) < opened ? ch : rnd();
+        out += cur.indexOf(i) !== -1 ? ch : rnd();
       }
       el.textContent = out;
     }
@@ -1235,18 +1242,16 @@
     /* скрытые места шевелятся символами */
     setInterval(draw, 600);
 
-    /* по одной цифре, в конце пауза — и круг заново */
     (function step() {
-      setTimeout(function () {
-        var full = opened >= digits.length;
-        opened = full ? 0 : opened + 1;
-        draw();
-        step();
-      }, opened >= digits.length ? 5200 : 2600);
+      var idx = si % seq.length;
+      cur = seq[idx];
+      draw();
+      si++;
+      var delay = idx === seq.length - 1 ? 4600 : (cur.length === 1 ? 1100 : 850);
+      setTimeout(step, delay);
     })();
   }
 
-  /* вторая строка секретной даты печатается после завершения загрузки */
   function startSecretLine2() {
     var cfg = P.secretDate || {};
     var l2 = document.getElementById("secret-line2");
