@@ -376,6 +376,68 @@ kbd {
 .noscript h2 { margin: 0 0 0.5rem; font-size: 1rem; color: var(--accent); }
 .noscript p  { margin: 0 0 0.5rem; color: var(--dim); }
 
+/* --- диалог доступа ------------------------------------------------------ */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.dialog-backdrop[hidden] { display: none; }
+
+.dialog {
+  width: min(360px, 100%);
+  border: 1px solid var(--frame);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7), 0 0 40px -18px var(--glow);
+  padding: 1rem 1.1rem 1.1rem;
+}
+.dialog-title {
+  color: var(--accent);
+  margin-bottom: 0.7rem;
+  text-shadow: 0 0 12px var(--glow);
+}
+.dialog-label {
+  display: block;
+  color: var(--dim);
+  font-size: 0.8rem;
+  margin: 0.45rem 0 0.2rem;
+}
+.dialog-input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--frame);
+  border-radius: 6px;
+  font: inherit;
+  padding: 0.35rem 0.55rem;
+  outline: none;
+  caret-color: var(--accent);
+}
+.dialog-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px -4px var(--glow);
+}
+.dialog-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+.dialog-msg {
+  min-height: 1.2em;
+  margin-top: 0.5rem;
+  color: var(--err);
+  font-size: 0.85rem;
+}
+.shake { animation: shake 0.3s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
 /* --- доступность --------------------------------------------------------- */
 ::selection { background: var(--accent); color: var(--bg); }
 
@@ -399,6 +461,7 @@ kbd {
   .terminal { animation: none; }
   .screen { scroll-behavior: auto; }
   body::after { opacity: 0.35; }
+  .shake { animation: none; }
 }
 
 @media (prefers-contrast: more) {
