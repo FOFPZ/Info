@@ -20,7 +20,7 @@
   <meta property="og:image" content="https://fofpz.github.io/Info/assets/og.png">
 
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=10">
+  <link rel="stylesheet" href="assets/style.css?v=11">
 </head>
 
 <body>
@@ -33,10 +33,10 @@
       <button class="tab active" id="tab-terminal" data-view="terminal" type="button">терминал</button>
       <button class="tab" id="tab-projects" data-view="projects" type="button">проекты</button>
       <button class="tab" id="tab-friends" data-view="friends" type="button">друзья</button>
+      <button class="tab" id="tab-log" data-view="log" type="button">лог</button>
     </nav>
     <div class="nav-actions">
       <button id="login-btn" class="ghost-btn" type="button" aria-label="Войти в режим владельца">войти</button>
-      <button id="theme-btn" class="ghost-btn" type="button" title="Сменить тему" aria-label="Сменить тему оформления">◐</button>
     </div>
   </header>
 
@@ -45,6 +45,21 @@
 
     <!-- ================= ТЕРМИНАЛ ================= -->
     <section id="view-terminal" class="view">
+      <div class="monitor">
+        <div class="monitor-top">
+          <span class="monitor-brand">fofpz tron · 14″</span>
+          <span class="tray">
+            <i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span><span class="badge" id="owner-badge" hidden>владелец</span>
+            <span class="sep"> · </span><span id="theme-name">phosphor-green</span>
+            <span class="sep"> · </span><time id="clock">--:--:--</time>
+          </span>
+          <span class="monitor-btns">
+            <button class="m-btn" id="m-glare" type="button" title="блик экрана">◍</button>
+            <button class="m-btn" id="m-theme" type="button" title="цвет экрана">◐</button>
+            <i class="m-led" id="m-led" aria-hidden="true"></i>
+          </span>
+        </div>
+
       <section class="terminal glass" aria-label="Терминал">
         <header class="titlebar">
           <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -66,12 +81,14 @@
           </form>
         </div>
 
-        <footer class="statusbar">
-          <span class="status-left"><i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span><span class="badge" id="owner-badge" hidden>владелец</span></span>
-          <span class="hint-cell">help — список команд · страница ничего не собирает</span>
-          <span class="right"><span id="theme-name">phosphor-green</span><span class="sep"> · </span><time id="clock">--:--:--</time></span>
-        </footer>
       </section>
+
+        <div class="monitor-chin">
+          <span class="vents" aria-hidden="true"></span>
+          <span class="chin-label">help — список команд · страница ничего не собирает</span>
+        </div>
+      </div>
+      <div class="monitor-stand" aria-hidden="true"><i class="neck"></i><i class="base"></i></div>
 
       <p class="keys">
         <kbd>Enter</kbd> выполнить ·
@@ -104,6 +121,14 @@
       <div class="cards friends" id="friends-grid"></div>
     </section>
 
+    <!-- ================= ЛОГ ================= -->
+    <section id="view-log" class="view" hidden>
+      <button class="view-back" type="button" data-view="terminal">← назад в терминал</button>
+      <h2 class="view-title">лог сайта</h2>
+      <p class="view-sub">что здесь менялось. коротко и по делу.</p>
+      <ol class="log-list" id="log-list"></ol>
+    </section>
+
     <footer class="site-footer glass">
       <span data-bind="title">??!?@#$@</span> · FOFPZ · без трекеров, без cookies, без лишнего
     </footer>
@@ -134,7 +159,7 @@
     </div>
   </noscript>
 
-  <script src="assets/profile.js?v=10"></script>
-  <script src="assets/app.js?v=10"></script>
+  <script src="assets/profile.js?v=11"></script>
+  <script src="assets/app.js?v=11"></script>
 </body>
 </html>

@@ -444,10 +444,11 @@
   }
 
   /* --- вкладки сайта: проекты и друзья живут здесь, не в консоли ---------- */
-  var VIEWS = ["terminal", "projects", "friends"];
+  var VIEWS = ["terminal", "projects", "friends", "log"];
   var MOVED = {
     projects: { view: "projects", title: "проекты" },
-    friend:   { view: "friends",  title: "друзья" }
+    friend:   { view: "friends",  title: "друзья" },
+    log:      { view: "log",      title: "лог" }
   };
 
   function switchView(name) {
@@ -553,9 +554,22 @@
     });
   }
 
+  function renderLog() {
+    var list = document.getElementById("log-list");
+    if (!list) return;
+    list.innerHTML = "";
+    (P.changelog || []).forEach(function (e) {
+      var li = mk("li", "log-row");
+      li.appendChild(mk("span", "log-v", "v" + e.v));
+      li.appendChild(mk("p", "log-text", e.t));
+      list.appendChild(li);
+    });
+  }
+
   function initViews() {
     renderProjects();
     renderFriends();
+    renderLog();
     Array.prototype.forEach.call(document.querySelectorAll(".tab, .view-back"), function (tab) {
       tab.addEventListener("click", function () {
         if (switchView(tab.getAttribute("data-view")) === "terminal" && !booting && !cmd.disabled) {
@@ -857,7 +871,7 @@
     ["анонимность",       ["privacy", "mask"]],
     ["журнал (локально)", ["who", "history", "sessions", "journal"]],
     ["владелец",          ["login", "logout", "secret"]],
-    ["система",           ["ls", "cat", "echo", "date", "uptime", "theme", "clear", "exit"]]
+    ["система",           ["ls", "cat", "echo", "date", "uptime", "theme", "log", "clear", "exit"]]
   ];
 
   /* --- выполнение -------------------------------------------------------- */
@@ -1002,6 +1016,24 @@
       var i = THEMES.indexOf(root.getAttribute("data-theme"));
       setTheme(THEMES[(i + 1) % THEMES.length], !booting);
       if (!booting) cmd.focus();
+    });
+  }
+
+  /* кнопки на мониторе: тема и блик ---------------------------------------- */
+  var mTheme = document.getElementById("m-theme");
+  var mGlare = document.getElementById("m-glare");
+  if (mTheme) {
+    mTheme.addEventListener("click", function () {
+      var i = THEMES.indexOf(root.getAttribute("data-theme"));
+      setTheme(THEMES[(i + 1) % THEMES.length], !booting);
+    });
+  }
+  if (mGlare) {
+    mGlare.addEventListener("click", function () {
+      var t = document.querySelector(".terminal");
+      if (!t) return;
+      t.classList.toggle("no-glare");
+      mGlare.classList.toggle("off", t.classList.contains("no-glare"));
     });
   }
 
