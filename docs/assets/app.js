@@ -204,7 +204,11 @@
     echo: function (rawLine, cls) {
       /* строка приглашения вместе с введённой командой */
       var el = mk("div", "line cmd-echo" + (cls ? " " + cls : ""));
-      el.appendChild(mk("span", "ps1", (P.host || "anon") + ":" + (P.dir || "~") + "$"));
+      var ps = mk("span", "ps1");
+      ps.appendChild(mk("span", "ps1-host", (P.host || "anon") + ":"));
+      ps.appendChild(mk("span", "ps1-dir", P.dir || "~"));
+      ps.appendChild(mk("span", "ps1-dollar", "$"));
+      el.appendChild(ps);
       el.appendChild(mk("span", "cmd-text", rawLine));
       output.appendChild(el); trim(); scrollDown();
       return el;
@@ -471,7 +475,7 @@
           print.kv(name, c.d);
         });
         print.blank();
-        print.line("↑ ↓ — история, tab — дополнить, ctrl+l — очистить", "muted");
+        print.line("↑ ↓ — история · tab — дополнить · ctrl+l — очистить · ? — тоже help", "muted");
       }
     },
     whoami: {
@@ -743,12 +747,23 @@
   };
 
   /* --- выполнение -------------------------------------------------------- */
+  var ALIAS = { "?": "help", "h": "help", "cls": "clear", "man": "help" };
+
   function setStatus(text) { if (statusEl) statusEl.textContent = text; }
+
+  function suggestFor(name) {
+    var first = name.charAt(0);
+    var list = Object.keys(COMMANDS).filter(function (n) {
+      return n.charAt(0) === first && n !== name && n.indexOf(name) !== 0;
+    });
+    return list[0] || null;
+  }
 
   function run(raw) {
     finishNow();
     var line = raw.trim();
     print.echo(line);
+    updateGhost();
     if (!line) return;
 
     history.push(line);
@@ -761,7 +776,7 @@
     touchVisit();
 
     var parts = line.split(/\s+/);
-    var name = parts[0].toLowerCase();
+    var name = ALIAS[parts[0].toLowerCase()] || parts[0].toLowerCase();
     var args = parts.slice(1);
 
     if (COMMANDS[name]) {
@@ -774,7 +789,9 @@
       }
     } else {
       print.line(name + ": команда не найдена", "err");
-      print.line("введите help, чтобы увидеть список команд", "muted");
+      var guess = suggestFor(name);
+      if (guess) print.line("возможно, вы имели в виду: " + guess, "muted");
+      else print.line("введите help, чтобы увидеть список команд", "muted");
       setStatus("не найдено: " + name);
     }
     print.blank();
@@ -807,10 +824,16 @@
     } else if (e.key === "Tab") {
       e.preventDefault();
       complete();
+      updateGhost();
+    } else if (e.key === "ArrowRight" && cmd.selectionStart === cmd.value.length) {
+      e.preventDefault();
+      complete();
+      updateGhost();
     } else if (e.key === "l" && e.ctrlKey) {
       e.preventDefault();
       COMMANDS.clear.run([]);
     }
+    updateGhost();
   });
 
   function complete() {
@@ -826,6 +849,23 @@
       print.tags(matches);
     }
   }
+
+  /* --- призрачная подсказка: дописывает команду полупрозрачно ----------- */
+  var ghost = document.getElementById("ghost");
+
+  function updateGhost() {
+    if (!ghost) return;
+    var typed = cmd.value;
+    var v = typed.trim().toLowerCase();
+    var g = "";
+    if (v && !/\s/.test(v)) {
+      var m = Object.keys(COMMANDS).filter(function (n) { return n.indexOf(v) === 0; });
+      if (m.length) g = m[0].slice(typed.trim().length);
+    }
+    ghost.textContent = g;
+  }
+
+  cmd.addEventListener("input", updateGhost);
 
   /* клик по экрану — фокус в поле ввода */
   if (screen) {
@@ -1014,18 +1054,18 @@
     setStatus("загрузка");
 
     await sleep(200);
-    bootLine("[ ok ]", " инициализация ядра");
+    bootLine("[ ok ]", " ядро терминала, сборка 7");
     await sleep(180);
-    bootLine("[ ok ]", " подключение к " + (P.nick || "anon"));
+    bootLine("[ ok ]", " подключение: " + (P.nick || "anon"));
     await sleep(180);
     bootLine("[ ok ]", " телеметрия, счётчики, cookies");
-    bootLine("[выкл]", " ничего из этого не используется", "ok");
+    bootLine("[выкл]", " ничего из перечисленного не используется", "ok");
     await sleep(200);
     bootLine("[ .. ]", " поиск личных данных");
     await sleep(340);
     bootLine("[ -- ]", " не найдено. так и задумано", "warn");
     await sleep(240);
-    bootLine("[ ok ]", " сеанс открыт");
+    bootLine("[ ok ]", " сеанс открыт. добро пожаловать");
     await sleep(220);
     print.blank();
     print.ascii(logo());

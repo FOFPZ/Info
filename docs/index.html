@@ -20,7 +20,7 @@
   <meta property="og:image" content="https://fofpz.github.io/Info/assets/og.png">
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=6">
+  <link rel="stylesheet" href="assets/style.css?v=7">
 </head>
 
 <body>
@@ -42,16 +42,17 @@
 
         <form class="prompt-row" id="prompt-row" autocomplete="off" onsubmit="return false;">
           <label class="visually-hidden" for="cmd">Введите команду</label>
-          <span class="ps1" aria-hidden="true"><span data-bind="host">fofpz@anon:</span><span data-bind="dir">~</span>$</span>
+          <span class="ps1" aria-hidden="true"><span class="ps1-host" data-bind="host">fofpz@anon:</span><span class="ps1-dir" data-bind="dir">~</span><span class="ps1-dollar">$</span></span>
           <input id="cmd" name="cmd" type="text" inputmode="text" autocapitalize="off"
                  autocorrect="off" spellcheck="false" maxlength="120" disabled
                  placeholder="загрузка…">
+          <span class="ghost" id="ghost" aria-hidden="true"></span>
         </form>
       </div>
 
       <footer class="statusbar">
-        <span id="status-msg">загрузка</span>
-        <span class="hint-cell">help — список команд · приватных данных нет</span>
+        <span class="status-left"><i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span></span>
+        <span class="hint-cell">help — список команд · страница ничего не собирает</span>
         <span class="right"><span id="theme-name">phosphor-green</span><span class="sep"> · </span><time id="clock">--:--:--</time></span>
       </footer>
     </section>
@@ -96,7 +97,7 @@
     </form>
   </div>
 
-  <script src="assets/profile.js?v=6"></script>
-  <script src="assets/app.js?v=6"></script>
+  <script src="assets/profile.js?v=7"></script>
+  <script src="assets/app.js?v=7"></script>
 </body>
 </html>
