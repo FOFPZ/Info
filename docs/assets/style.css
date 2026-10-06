@@ -400,6 +400,7 @@ body::after {
 
 /* --- монитор: корпус, кнопки, ножка -------------------------------------- */
 .monitor {
+  position: relative;
   background: linear-gradient(180deg, #262b31 0%, #14171b 55%, #0b0d10 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
@@ -408,6 +409,19 @@ body::after {
     0 30px 80px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.09),
     inset 0 -16px 34px rgba(0, 0, 0, 0.5);
+}
+/* винты по углам рамки */
+.monitor::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  pointer-events: none;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle 3px at 6px 6px, rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px),
+    radial-gradient(circle 3px at calc(100% - 6px) 6px, rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px),
+    radial-gradient(circle 3px at 6px calc(100% - 6px), rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px),
+    radial-gradient(circle 3px at calc(100% - 6px) calc(100% - 6px), rgba(255, 255, 255, 0.28) 0 1.5px, rgba(0, 0, 0, 0.55) 2px, transparent 3px);
 }
 .monitor-top {
   display: flex;
