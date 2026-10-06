@@ -443,6 +443,92 @@
            "неизвестен";
   }
 
+  /* --- вкладки сайта: проекты и друзья живут здесь, не в консоли ---------- */
+  var VIEWS = ["terminal", "projects", "friends"];
+  var MOVED = {
+    projects: { view: "projects", title: "проекты" },
+    friend:   { view: "friends",  title: "друзья" }
+  };
+
+  function switchView(name) {
+    if (VIEWS.indexOf(name) === -1) name = "terminal";
+    VIEWS.forEach(function (v) {
+      var sec = document.getElementById("view-" + v);
+      var tab = document.getElementById("tab-" + v);
+      if (sec) sec.hidden = v !== name;
+      if (tab) tab.classList.toggle("active", v === name);
+    });
+    try {
+      if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+    } catch (e) {}
+    return name;
+  }
+
+  function renderProjects() {
+    var grid = document.getElementById("projects-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    (P.projects || []).forEach(function (p) {
+      var card = mk("article", "card glass");
+      var head = mk("div", "card-head");
+      head.appendChild(mk("h3", "card-title", p.name));
+      if (p.status) head.appendChild(mk("span", "chip", p.status));
+      card.appendChild(head);
+      card.appendChild(mk("p", "card-text", p.desc));
+      if (p.tags && p.tags.length) {
+        var tags = mk("div", "tags");
+        p.tags.forEach(function (t) { tags.appendChild(mk("span", "tag", t)); });
+        card.appendChild(tags);
+      }
+      if (p.url) {
+        var a = mk("a", "card-link", "смотреть на github →");
+        a.href = p.url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer nofollow";
+        card.appendChild(a);
+      }
+      grid.appendChild(card);
+    });
+  }
+
+  function renderFriends() {
+    var grid = document.getElementById("friends-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    (P.friends || []).forEach(function (f) {
+      var url = f.url || ("https://t.me/" + String(f.handle).replace("@", ""));
+      var card = mk("article", "card glass");
+      var a = mk("a", "friend-handle", f.handle);
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer nofollow";
+      card.appendChild(a);
+      if (f.note) card.appendChild(mk("p", "card-text", f.note));
+      var tg = mk("a", "card-link", "написать в telegram →");
+      tg.href = url;
+      tg.target = "_blank";
+      tg.rel = "noopener noreferrer nofollow";
+      card.appendChild(tg);
+      grid.appendChild(card);
+    });
+  }
+
+  function initViews() {
+    renderProjects();
+    renderFriends();
+    Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (tab) {
+      tab.addEventListener("click", function () {
+        if (switchView(tab.getAttribute("data-view")) === "terminal" && !booting && !cmd.disabled) {
+          cmd.focus();
+        }
+      });
+    });
+    window.addEventListener("hashchange", function () {
+      switchView((location.hash || "#terminal").slice(1));
+    });
+    switchView((location.hash || "#terminal").slice(1));
+  }
+
   /* --- ascii-лого -------------------------------------------------------- */
   var LOGO_BIG = [
     "███████╗  ██████╗ ███████╗ ██████╗  ███████╗",
@@ -489,6 +575,7 @@
         });
         print.blank();
         print.line("↑ ↓ — история · tab — дополнить · ctrl+l — очистить · ? — тоже help", "muted");
+        print.line("проекты и друзья — вкладки сайта наверху", "muted");
       }
     },
     whoami: {
@@ -504,52 +591,6 @@
       run: function () {
         print.section("обо мне");
         (P.about || []).forEach(function (t) { print.line(t); print.blank(); });
-      }
-    },
-    projects: {
-      d: "мои проекты",
-      run: function () {
-        var list = P.projects || [];
-        print.section("проекты");
-        if (!list.length) { print.line("не публикуются", "muted"); return; }
-        list.forEach(function (p) {
-          var head = mk("div", "line proj-head");
-          head.appendChild(mk("span", "accent", p.name));
-          if (p.status) head.appendChild(mk("span", "muted", " · " + p.status));
-          output.appendChild(head);
-          print.line(p.desc);
-          if (p.tags && p.tags.length) print.tags(p.tags);
-          if (p.url) print.link(p.url.replace(/^https?:\/\//, ""), p.url);
-          print.blank();
-        });
-      }
-    },
-    mask: {
-      d: "иконки анонимности",
-      run: function () {
-        var list = P.icons || [];
-        if (!list.length) { print.line("иконок нет", "muted"); return; }
-        print.line("символы анонимности:", "muted");
-        print.icons(list);
-      }
-    },
-    friend: {
-      d: "друзья: телеграм близких людей",
-      run: function () {
-        var list = P.friends || [];
-        print.section("друзья");
-        if (!list.length) { print.line("не публикуются", "muted"); return; }
-        print.line("в этом списке только те, кто сам не против:", "muted");
-        list.forEach(function (f) {
-          var el = mk("div", "line link-row" + revealCls());
-          var a = mk("a", "link", f.handle);
-          a.href = f.url || ("https://t.me/" + String(f.handle).replace("@", ""));
-          a.target = "_blank";
-          a.rel = "noopener noreferrer";
-          el.appendChild(a);
-          if (f.note) el.appendChild(mk("span", "note", "\u2014 " + f.note));
-          output.appendChild(el); trim(); scrollDown();
-        });
       }
     },
     skills: {
@@ -762,8 +803,6 @@
   var FILES = {
     "whoami.txt":   "whoami",
     "about.txt":    "about",
-    "projects.txt": "projects",
-    "friends.txt":  "friend",
     "skills.txt":   "skills",
     "stack.txt":   "stack",
     "links.txt":   "links",
@@ -774,7 +813,7 @@
   /* разделы справки */
   var GROUPS = [
     ["база",              ["help", "whoami", "about", "skills", "stack"]],
-    ["проекты и люди",    ["projects", "friend", "links", "contact"]],
+    ["связи",             ["links", "contact"]],
     ["анонимность",       ["privacy", "mask"]],
     ["журнал (локально)", ["who", "history", "sessions", "journal"]],
     ["владелец",          ["login", "logout", "secret"]],
@@ -813,6 +852,12 @@
     var parts = line.split(/\s+/);
     var name = ALIAS[parts[0].toLowerCase()] || parts[0].toLowerCase();
     var args = parts.slice(1);
+
+    if (MOVED[name]) {
+      print.line("этот раздел живёт на сайте — открываю вкладку «" + MOVED[name].title + "»", "muted");
+      switchView(MOVED[name].view);
+      return;
+    }
 
     if (COMMANDS[name]) {
       try {
@@ -1103,6 +1148,7 @@
     initTheme();
     initBackground();
     initSecretDate();
+    initViews();
     tick();
     setInterval(tick, 1000);
 

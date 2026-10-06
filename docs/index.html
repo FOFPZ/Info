@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>??!?@#$@</title>
 
-  <meta name="description" content="Анонимная визитка FOFPZ — мододела Minecraft: страница в виде терминала. Команды whoami, projects, about, skills, privacy. Без аналитики, cookies и сторонних запросов.">
+  <meta name="description" content="Анонимная визитка FOFPZ — мододела Minecraft: сайт с жидким стеклом и cmd-консолью. Проекты, друзья, терминал. Без аналитики, cookies и сторонних запросов.">
   <meta name="author" content="FOFPZ">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#04070a">
@@ -14,75 +14,101 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="FOFPZ">
   <meta property="og:title" content="??!?@#$@">
-  <meta property="og:description" content="Страница-терминал мододела Minecraft: моды, плагины, лаунчер. Ник вместо имени, ноль сторонних запросов, никакой телеметрии.">
+  <meta property="og:description" content="Сайт-терминал мододела Minecraft: моды, плагины, лаунчер, друзья. Ник вместо имени, ноль сторонних запросов, никакой телеметрии.">
   <meta property="og:url" content="https://fofpz.github.io/Info/">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:image" content="https://fofpz.github.io/Info/assets/og.png">
 
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=8">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css?v=9">
 </head>
 
 <body>
+  <header class="site-nav glass">
+    <a class="brand" href="#terminal">
+      <img class="brand-logo" src="assets/logo.svg" alt="" width="30" height="30">
+      <span class="brand-name" data-bind="title">??!?@#$@</span>
+    </a>
+    <nav class="tabs" aria-label="Разделы сайта">
+      <button class="tab active" id="tab-terminal" data-view="terminal" type="button">терминал</button>
+      <button class="tab" id="tab-projects" data-view="projects" type="button">проекты</button>
+      <button class="tab" id="tab-friends" data-view="friends" type="button">друзья</button>
+    </nav>
+    <div class="nav-actions">
+      <button id="login-btn" class="ghost-btn" type="button" aria-label="Войти в режим владельца">войти</button>
+      <button id="theme-btn" class="ghost-btn" type="button" title="Сменить тему" aria-label="Сменить тему оформления">◐</button>
+    </div>
+  </header>
+
   <main class="wrap">
     <h1 class="visually-hidden">??!?@#$@</h1>
 
-    <section class="terminal" aria-label="Терминал">
-      <header class="titlebar">
-        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="title">
-          <span data-bind="host">fofpz@anon:</span><span data-bind="dir">~</span> — <span data-bind="title">??!?@#$@</span>
-        </span>
-        <button id="login-btn" class="ghost-btn" type="button" aria-label="Войти в режим владельца">войти</button>
-        <button id="theme-btn" class="ghost-btn" type="button" title="Сменить тему" aria-label="Сменить тему оформления">◐</button>
-      </header>
+    <!-- ================= ТЕРМИНАЛ ================= -->
+    <section id="view-terminal" class="view">
+      <section class="terminal glass" aria-label="Терминал">
+        <header class="titlebar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="title">
+            <span data-bind="host">fofpz@anon:</span><span data-bind="dir">~</span> — <span data-bind="title">??!?@#$@</span>
+          </span>
+        </header>
 
-      <div class="screen" id="screen">
-        <div class="output" id="output" role="log" aria-live="polite" aria-relevant="additions"></div>
+        <div class="screen" id="screen">
+          <div class="output" id="output" role="log" aria-live="polite" aria-relevant="additions"></div>
 
-        <form class="prompt-row" id="prompt-row" autocomplete="off" onsubmit="return false;">
-          <label class="visually-hidden" for="cmd">Введите команду</label>
-          <span class="ps1" aria-hidden="true"><span class="ps1-host" data-bind="host">fofpz@anon:</span><span class="ps1-dir" data-bind="dir">~</span><span class="ps1-dollar">$</span><span class="ps1-owner" id="owner-seg" hidden>(владелец)</span></span>
-          <input id="cmd" name="cmd" type="text" inputmode="text" autocapitalize="off"
-                 autocorrect="off" spellcheck="false" maxlength="120" disabled
-                 placeholder="загрузка…">
-          <span class="ghost" id="ghost" aria-hidden="true"></span>
-        </form>
-      </div>
+          <form class="prompt-row" id="prompt-row" autocomplete="off" onsubmit="return false;">
+            <label class="visually-hidden" for="cmd">Введите команду</label>
+            <span class="ps1" aria-hidden="true"><span class="ps1-host" data-bind="host">fofpz@anon:</span><span class="ps1-dir" data-bind="dir">~</span><span class="ps1-dollar">$</span><span class="ps1-owner" id="owner-seg" hidden>(владелец)</span></span>
+            <input id="cmd" name="cmd" type="text" inputmode="text" autocapitalize="off"
+                   autocorrect="off" spellcheck="false" maxlength="120" disabled
+                   placeholder="загрузка…">
+            <span class="ghost" id="ghost" aria-hidden="true"></span>
+          </form>
+        </div>
 
-      <footer class="statusbar">
-        <span class="status-left"><i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span><span class="badge" id="owner-badge" hidden>владелец</span></span>
-        <span class="hint-cell">help — список команд · страница ничего не собирает</span>
-        <span class="right"><span id="theme-name">phosphor-green</span><span class="sep"> · </span><time id="clock">--:--:--</time></span>
-      </footer>
+        <footer class="statusbar">
+          <span class="status-left"><i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span><span class="badge" id="owner-badge" hidden>владелец</span></span>
+          <span class="hint-cell">help — список команд · страница ничего не собирает</span>
+          <span class="right"><span id="theme-name">phosphor-green</span><span class="sep"> · </span><time id="clock">--:--:--</time></span>
+        </footer>
+      </section>
+
+      <p class="keys">
+        <kbd>Enter</kbd> выполнить ·
+        <kbd>Tab</kbd> дополнить ·
+        <kbd>↑</kbd><kbd>↓</kbd> история ·
+        <kbd>Ctrl</kbd>+<kbd>L</kbd> очистить
+      </p>
+
+      <section class="secret-date" aria-label="Засекреченная дата">
+        <span class="visually-hidden">Засекреченная дата скрыта символами</span>
+        <div class="secret-date-value" id="secret-date" aria-hidden="true">??.??.????</div>
+        <p class="secret-date-line1" id="secret-line1"></p>
+        <p class="secret-date-line2"><span id="secret-line2"></span><span class="secret-caret" id="secret-caret" aria-hidden="true"></span></p>
+      </section>
     </section>
 
-    <section class="secret-date" aria-label="Засекреченная дата">
-      <span class="visually-hidden">Засекреченная дата скрыта символами</span>
-      <div class="secret-date-value" id="secret-date" aria-hidden="true">??.??.????</div>
-      <p class="secret-date-line1" id="secret-line1"></p>
-      <p class="secret-date-line2"><span id="secret-line2"></span><span class="secret-caret" id="secret-caret" aria-hidden="true"></span></p>
+    <!-- ================= ПРОЕКТЫ ================= -->
+    <section id="view-projects" class="view" hidden>
+      <h2 class="view-title">проекты</h2>
+      <p class="view-sub">что я сделал. всё честно, включая закрытое.</p>
+      <div class="cards" id="projects-grid"></div>
     </section>
 
-    <p class="keys">
-      <kbd>Enter</kbd> выполнить ·
-      <kbd>Tab</kbd> дополнить ·
-      <kbd>↑</kbd><kbd>↓</kbd> история ·
-      <kbd>Ctrl</kbd>+<kbd>L</kbd> очистить
-    </p>
+    <!-- ================= ДРУЗЬЯ ================= -->
+    <section id="view-friends" class="view" hidden>
+      <h2 class="view-title">друзья</h2>
+      <p class="view-sub">в этом списке только те, кто сам не против.</p>
+      <div class="cards friends" id="friends-grid"></div>
+    </section>
 
-    <noscript>
-      <div class="noscript">
-        <h2>??!?@#$@</h2>
-        <p>Страница работает как терминал и требует JavaScript. Здесь только псевдоним: настоящее имя, город и контакты не публикуются.</p>
-        <p>Профиль: <a class="link" href="https://github.com/FOFPZ" rel="noopener noreferrer nofollow">github.com/FOFPZ</a> ·
-           Исходники: <a class="link" href="https://github.com/FOFPZ/Info" rel="noopener noreferrer nofollow">github.com/FOFPZ/Info</a></p>
-      </div>
-    </noscript>
+    <footer class="site-footer glass">
+      <span data-bind="title">??!?@#$@</span> · FOFPZ · без трекеров, без cookies, без лишнего
+    </footer>
   </main>
 
   <div class="dialog-backdrop" id="login-dialog" hidden>
-    <form class="dialog" id="login-form" autocomplete="off" novalidate>
+    <form class="dialog glass" id="login-form" autocomplete="off" novalidate>
       <div class="dialog-title">проверка доступа</div>
       <label class="dialog-label" for="login-user">имя пользователя</label>
       <input class="dialog-input" id="login-user" type="text"
@@ -97,7 +123,16 @@
     </form>
   </div>
 
-  <script src="assets/profile.js?v=8"></script>
-  <script src="assets/app.js?v=8"></script>
+  <noscript>
+    <div class="noscript glass">
+      <h2>??!?@#$@</h2>
+      <p>Сайт работает как терминал и требует JavaScript. Здесь только псевдоним: настоящее имя, город и контакты не публикуются.</p>
+      <p>Профиль: <a class="link" href="https://github.com/FOFPZ" rel="noopener noreferrer nofollow">github.com/FOFPZ</a> ·
+         Исходники: <a class="link" href="https://github.com/FOFPZ/Info" rel="noopener noreferrer nofollow">github.com/FOFPZ/Info</a></p>
+    </div>
+  </noscript>
+
+  <script src="assets/profile.js?v=9"></script>
+  <script src="assets/app.js?v=9"></script>
 </body>
 </html>
