@@ -856,9 +856,9 @@
       return {
         x: Math.random() * W,
         y: fromTop ? -24 : Math.random() * H,
-        s: 10 + Math.random() * 8,
-        v: 0.25 + Math.random() * 0.75,
-        a: 0.04 + Math.random() * 0.10,
+        s: 12 + Math.random() * 10,
+        v: 0.35 + Math.random() * 0.9,
+        a: 0.08 + Math.random() * 0.14,
         d: (Math.random() - 0.5) * 0.2,
         g: glyphs.charAt(Math.floor(Math.random() * glyphs.length))
       };
@@ -872,7 +872,7 @@
 
     resize();
     color = readAccent();
-    var n = Math.max(24, Math.min(60, Math.floor(W / 28)));
+    var n = Math.max(60, Math.min(160, Math.floor(W / 14)));
     for (var i = 0; i < n; i++) parts.push(make(false));
     window.addEventListener("resize", resize);
 
@@ -895,6 +895,48 @@
       ctx.globalAlpha = 1;
       requestAnimationFrame(loop);
     })();
+  }
+
+  /* --- засекреченная дата: живые символы вместо знаков вопроса ----------- */
+  function initSecretDate() {
+    var cfg = P.secretDate || {};
+    var pattern = cfg.pattern || "??.??.????";
+    var el = document.getElementById("secret-date");
+    var l1 = document.getElementById("secret-line1");
+    var l2 = document.getElementById("secret-line2");
+    var pool = "!@#$%&*?<>^~0123456789XYZF";
+
+    if (l1) l1.textContent = cfg.line1 || "";
+
+    function scramble() {
+      if (!el) return;
+      var out = "";
+      for (var i = 0; i < pattern.length; i++) {
+        var ch = pattern.charAt(i);
+        out += ch === "?" ? pool.charAt(Math.floor(Math.random() * pool.length)) : ch;
+      }
+      el.textContent = out;
+    }
+
+    scramble();
+    if (!reduce) setInterval(scramble, 700);
+
+  }
+
+  /* вторая строка секретной даты печатается после завершения загрузки */
+  function startSecretLine2() {
+    var cfg = P.secretDate || {};
+    var l2 = document.getElementById("secret-line2");
+    var text = cfg.line2 || "";
+    if (!l2) return;
+    if (reduce || !ANIM.enabled) { l2.textContent = text; return; }
+    setTimeout(function () {
+      var i = 0;
+      (function step() {
+        l2.textContent = text.slice(0, ++i);
+        if (i < text.length) setTimeout(step, 48);
+      })();
+    }, 900);
   }
 
   /* --- автозагрузка ------------------------------------------------------ */
@@ -935,6 +977,7 @@
   async function boot() {
     initTheme();
     initBackground();
+    initSecretDate();
     tick();
     setInterval(tick, 1000);
 
@@ -977,6 +1020,7 @@
 
     booting = false;
     skip = false;
+    startSecretLine2();
     document.removeEventListener("keydown", skipBoot);
     promptRow.classList.add("ready");
     cmd.disabled = false;
