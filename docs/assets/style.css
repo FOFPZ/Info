@@ -176,7 +176,24 @@ body::after {
     0 0 60px -20px var(--glow),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   overflow: hidden;
+  position: relative;
   animation: flicker 7s infinite steps(60);
+}
+
+/* медленный блик по стеклу терминала */
+.terminal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.05) 50%, transparent 58%);
+  background-size: 250% 100%;
+  animation: sweep 12s linear infinite;
+}
+@keyframes sweep {
+  0%   { background-position: 130% 0; }
+  100% { background-position: -130% 0; }
 }
 
 @keyframes flicker {
@@ -415,6 +432,54 @@ body::after {
 .cmd-echo .ps1 { margin-right: 0.6rem; }
 .cmd-echo .cmd-text { color: var(--fg); }
 
+/* --- секции-заголовки в выводе ------------------------------------------- */
+.section {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.5rem 0 0.3rem;
+  color: var(--dim);
+}
+.section::before,
+.section::after {
+  content: "";
+  height: 1px;
+  background: var(--frame);
+  flex: 1 1 auto;
+}
+.section-title {
+  letter-spacing: 0.16em;
+  font-size: 0.78em;
+  text-transform: uppercase;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.boot-bar {
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 10px var(--glow);
+}
+
+.tagline {
+  color: var(--dim);
+  font-style: italic;
+  letter-spacing: 0.05em;
+}
+
+.badge {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 0 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  margin-left: 0.55rem;
+  text-transform: uppercase;
+}
+
+.ps1-owner { color: var(--warn); margin-left: 0.4rem; }
+
 /* --- строка состояния ---------------------------------------------------- */
 .statusbar {
   display: flex;
@@ -638,6 +703,7 @@ kbd {
   .secret-caret { animation: none; opacity: 1; }
   .status-dot { animation: none; }
   .secret-date-value { animation: none; }
+  .terminal::after { animation: none; opacity: 0; }
 }
 
 @media (prefers-contrast: more) {

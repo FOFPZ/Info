@@ -20,7 +20,7 @@
   <meta property="og:image" content="https://fofpz.github.io/Info/assets/og.png">
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/style.css?v=7">
+  <link rel="stylesheet" href="assets/style.css?v=8">
 </head>
 
 <body>
@@ -42,7 +42,7 @@
 
         <form class="prompt-row" id="prompt-row" autocomplete="off" onsubmit="return false;">
           <label class="visually-hidden" for="cmd">Введите команду</label>
-          <span class="ps1" aria-hidden="true"><span class="ps1-host" data-bind="host">fofpz@anon:</span><span class="ps1-dir" data-bind="dir">~</span><span class="ps1-dollar">$</span></span>
+          <span class="ps1" aria-hidden="true"><span class="ps1-host" data-bind="host">fofpz@anon:</span><span class="ps1-dir" data-bind="dir">~</span><span class="ps1-dollar">$</span><span class="ps1-owner" id="owner-seg" hidden>(владелец)</span></span>
           <input id="cmd" name="cmd" type="text" inputmode="text" autocapitalize="off"
                  autocorrect="off" spellcheck="false" maxlength="120" disabled
                  placeholder="загрузка…">
@@ -51,7 +51,7 @@
       </div>
 
       <footer class="statusbar">
-        <span class="status-left"><i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span></span>
+        <span class="status-left"><i class="status-dot" aria-hidden="true"></i><span id="status-msg">загрузка</span><span class="badge" id="owner-badge" hidden>владелец</span></span>
         <span class="hint-cell">help — список команд · страница ничего не собирает</span>
         <span class="right"><span id="theme-name">phosphor-green</span><span class="sep"> · </span><time id="clock">--:--:--</time></span>
       </footer>
@@ -97,7 +97,7 @@
     </form>
   </div>
 
-  <script src="assets/profile.js?v=7"></script>
-  <script src="assets/app.js?v=7"></script>
+  <script src="assets/profile.js?v=8"></script>
+  <script src="assets/app.js?v=8"></script>
 </body>
 </html>

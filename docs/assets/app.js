@@ -184,6 +184,12 @@
       output.appendChild(el); trim(); scrollDown();
       return el;
     },
+    section: function (title) {
+      var el = mk("div", "line section" + revealCls());
+      el.appendChild(mk("span", "section-title", title));
+      output.appendChild(el); trim(); scrollDown();
+      return el;
+    },
     neofetch: function (logo, rows) {
       var el = mk("div", "line neo" + revealCls());
       var pre = mk("pre", "neo-logo", logo);
@@ -208,6 +214,7 @@
       ps.appendChild(mk("span", "ps1-host", (P.host || "anon") + ":"));
       ps.appendChild(mk("span", "ps1-dir", P.dir || "~"));
       ps.appendChild(mk("span", "ps1-dollar", "$"));
+      if (owner) ps.appendChild(mk("span", "ps1-owner", "(владелец)"));
       el.appendChild(ps);
       el.appendChild(mk("span", "cmd-text", rawLine));
       output.appendChild(el); trim(); scrollDown();
@@ -317,6 +324,10 @@
   function setOwner(on, announce) {
     owner = on;
     if (COMMANDS.secret) COMMANDS.secret.hidden = !on;
+    var badge = document.getElementById("owner-badge");
+    var seg = document.getElementById("owner-seg");
+    if (badge) badge.hidden = !on;
+    if (seg) seg.hidden = !on;
     if (loginBtn) {
       loginBtn.textContent = on ? "выйти" : "войти";
       loginBtn.setAttribute("aria-label", on ? "Выйти из режима владельца" : "Войти в режим владельца");
@@ -468,11 +479,13 @@
     help: {
       d: "список команд",
       run: function () {
-        print.line("доступные команды:", "muted");
-        Object.keys(COMMANDS).forEach(function (name) {
-          var c = COMMANDS[name];
-          if (c.hidden) return;
-          print.kv(name, c.d);
+        GROUPS.forEach(function (g) {
+          var names = g[1].filter(function (n) {
+            return COMMANDS[n] && !COMMANDS[n].hidden;
+          });
+          if (!names.length) return;
+          print.section(g[0]);
+          names.forEach(function (n) { print.kv(n, COMMANDS[n].d); });
         });
         print.blank();
         print.line("↑ ↓ — история · tab — дополнить · ctrl+l — очистить · ? — тоже help", "muted");
@@ -481,6 +494,7 @@
     whoami: {
       d: "кто я (кратко)",
       run: function () {
+        print.section("whoami");
         print.line(P.nick || "anon", "accent");
         (P.facts || []).forEach(function (f) { print.kv(f.k, f.v); });
       }
@@ -488,6 +502,7 @@
     about: {
       d: "немного о себе",
       run: function () {
+        print.section("обо мне");
         (P.about || []).forEach(function (t) { print.line(t); print.blank(); });
       }
     },
@@ -495,6 +510,7 @@
       d: "мои проекты",
       run: function () {
         var list = P.projects || [];
+        print.section("проекты");
         if (!list.length) { print.line("не публикуются", "muted"); return; }
         list.forEach(function (p) {
           var head = mk("div", "line proj-head");
@@ -521,8 +537,9 @@
       d: "друзья: телеграм близких людей",
       run: function () {
         var list = P.friends || [];
+        print.section("друзья");
         if (!list.length) { print.line("не публикуются", "muted"); return; }
-        print.line("друзья. в этом списке только те, кто сам не против:", "muted");
+        print.line("в этом списке только те, кто сам не против:", "muted");
         list.forEach(function (f) {
           var el = mk("div", "line link-row" + revealCls());
           var a = mk("a", "link", f.handle);
@@ -538,6 +555,7 @@
     skills: {
       d: "навыки и уровни",
       run: function () {
+        print.section("навыки");
         (P.skills || []).forEach(function (s) { print.bar(s.k, s.v); });
         if (!P.skills || !P.skills.length) print.line("не публикуются", "muted");
       }
@@ -545,6 +563,7 @@
     stack: {
       d: "инструменты",
       run: function () {
+        print.section("инструменты");
         if (P.stack && P.stack.length) print.tags(P.stack);
         else print.line("не публикуется", "muted");
       }
@@ -552,6 +571,7 @@
     links: {
       d: "публичные ссылки",
       run: function () {
+        print.section("ссылки");
         (P.links || []).forEach(function (l) { print.link(l.label, l.url, l.note); });
         if (!P.links || !P.links.length) print.line("ссылок нет", "muted");
       }
@@ -559,12 +579,14 @@
     contact: {
       d: "как связаться",
       run: function () {
+        print.section("связь");
         (P.contact || []).forEach(function (t) { print.line(t); });
       }
     },
     privacy: {
       d: "что скрыто и почему",
       run: function () {
+        print.section("приватность");
         (P.privacy || []).forEach(function (t, i) { print.line((i + 1) + ". " + t); });
       }
     },
@@ -660,6 +682,7 @@
     who: {
       d: "кто сейчас на сайте (этот браузер)",
       run: function () {
+        print.section("кто на сайте");
         var j = journal();
         var v = j.visits[j.visits.length - 1] || { start: Date.now() };
         print.kv("статус", owner ? "владелец" : "гость");
@@ -677,8 +700,9 @@
       run: function (args) {
         var j = journal();
         var n = parseInt(args[0], 10) || 30;
+        print.section("журнал команд");
         if (!j.cmds.length) { print.line("журнал команд пуст", "muted"); return; }
-        print.line("последние команды (хранятся только здесь):", "muted");
+        print.line("хранится только в этом браузере:", "muted");
         j.cmds.slice(-n).forEach(function (e) {
           print.kv(new Date(e.t).toLocaleTimeString("ru-RU", { hour12: false }), e.c);
         });
@@ -688,8 +712,9 @@
       d: "история визитов этого браузера",
       run: function () {
         var j = journal();
+        print.section("визиты");
         if (!j.visits.length) { print.line("визитов не записано", "muted"); return; }
-        print.line("последние визиты (хранятся только здесь):", "muted");
+        print.line("хранится только в этом браузере:", "muted");
         j.visits.slice(-10).forEach(function (v) {
           print.kv(fmtDate(v.start), fmtDur((v.end || v.start) - v.start) +
             (v.owner ? " · владелец" : "") + " · " + (THEME_NAMES[v.theme] || v.theme));
@@ -743,8 +768,18 @@
     "stack.txt":   "stack",
     "links.txt":   "links",
     "contact.txt": "contact",
-    "privacy.txt": "privacy"
+    "privacy.txt":  "privacy"
   };
+
+  /* разделы справки */
+  var GROUPS = [
+    ["база",              ["help", "whoami", "about", "skills", "stack"]],
+    ["проекты и люди",    ["projects", "friend", "links", "contact"]],
+    ["анонимность",       ["privacy", "mask"]],
+    ["журнал (локально)", ["who", "history", "sessions", "journal"]],
+    ["владелец",          ["login", "logout", "secret"]],
+    ["система",           ["ls", "cat", "echo", "date", "uptime", "theme", "clear", "exit"]]
+  ];
 
   /* --- выполнение -------------------------------------------------------- */
   var ALIAS = { "?": "help", "h": "help", "cls": "clear", "man": "help" };
@@ -1042,6 +1077,28 @@
     scrollDown();
   }
 
+  function progress() {
+    return new Promise(function (resolve) {
+      var el = mk("div", "line boot-bar");
+      output.appendChild(el);
+      scrollDown();
+      if (skip || reduce) {
+        el.textContent = "[" + "#".repeat(14) + "] 100%";
+        resolve();
+        return;
+      }
+      var p = 0;
+      (function step() {
+        p = Math.min(100, p + 6 + Math.random() * 10);
+        var filled = Math.round(p / 100 * 14);
+        el.textContent = "[" + "#".repeat(filled) + ".".repeat(14 - filled) + "] " + Math.round(p) + "%";
+        scrollDown();
+        if (p < 100) setTimeout(step, 55);
+        else setTimeout(resolve, 160);
+      })();
+    });
+  }
+
   async function boot() {
     initTheme();
     initBackground();
@@ -1067,9 +1124,10 @@
     await sleep(240);
     bootLine("[ ok ]", " сеанс открыт. добро пожаловать");
     await sleep(220);
+    await progress();
     print.blank();
     print.ascii(logo());
-    print.line("анонимная визитка · " + (P.role || "аноним"), "muted");
+    print.line(P.tagline || ("анонимная визитка · " + (P.role || "аноним")), "tagline");
     if (P.icons && P.icons.length) print.icons(P.icons);
     print.blank();
 
