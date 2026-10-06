@@ -26,6 +26,7 @@
   }
   bindAll("host", (P.host || "anon") + ":");
   bindAll("dir", P.dir || "~");
+  bindAll("title", P.siteTitle || "визитка");
 
   if (promptRow && promptRow.tagName === "FORM") {
     promptRow.addEventListener("submit", function (e) { e.preventDefault(); });
@@ -71,20 +72,66 @@
     while (output.childNodes.length > 700) output.removeChild(output.firstChild);
   }
 
+  /* --- анимация появления: вывод печатается по символам -------------------
+     Отключается при prefers-reduced-motion и параметром ?noanim в адресе.
+     Клик по экрану или новая команда досрочно показывают текст целиком.
+     ---------------------------------------------------------------------- */
+  var ANIM = { enabled: !reduce, queue: [], running: false };
+  try { if (/[?&]noanim/.test(location.search)) ANIM.enabled = false; } catch (e) {}
+
+  function pump() {
+    if (ANIM.running) return;
+    var job = ANIM.queue.shift();
+    if (!job) return;
+    ANIM.running = true;
+    (function step() {
+      if (job.done) { ANIM.running = false; pump(); return; }
+      job.i = Math.min(job.text.length, job.i + 2);
+      job.target.textContent = job.text.slice(0, job.i);
+      scrollDown();
+      if (job.i >= job.text.length) {
+        job.done = true;
+        setTimeout(function () { ANIM.running = false; pump(); }, 40);
+      } else {
+        setTimeout(step, 12);
+      }
+    })();
+  }
+
+  function finishNow() {
+    ANIM.queue.forEach(function (job) { if (!job.done) job.finish(); });
+    ANIM.queue.length = 0;
+    ANIM.running = false;
+  }
+
+  function typeInto(el, text, cls) {
+    if (!ANIM.enabled || cls === "blank" || !text) { el.textContent = text; return; }
+    el.textContent = "";
+    var job = {
+      text: text, i: 0, done: false, target: el,
+      finish: function () { this.done = true; el.textContent = text; }
+    };
+    ANIM.queue.push(job);
+    pump();
+  }
+
+  function revealCls() { return ANIM.enabled ? " reveal-in" : ""; }
+
   var print = {
     line: function (text, cls) {
-      var el = mk("div", "line" + (cls ? " " + cls : ""), text);
+      var el = mk("div", "line" + (cls ? " " + cls : ""), "");
       output.appendChild(el); trim(); scrollDown();
+      typeInto(el, text, cls);
       return el;
     },
     blank: function () { return print.line("\u00a0", "blank"); },
     ascii: function (text) {
-      var el = mk("pre", "line ascii", text);
+      var el = mk("pre", "line ascii" + revealCls(), text);
       output.appendChild(el); trim(); scrollDown();
       return el;
     },
     kv: function (k, v) {
-      var el = mk("div", "line kv");
+      var el = mk("div", "line kv" + revealCls());
       el.appendChild(mk("span", "k", k));
       el.appendChild(mk("span", "v", v));
       output.appendChild(el); trim(); scrollDown();
@@ -94,7 +141,7 @@
       var n = Math.max(0, Math.min(100, Number(v) || 0));
       var width = 22;
       var filled = Math.round((n / 100) * width);
-      var el = mk("div", "line kv skill");
+      var el = mk("div", "line kv skill" + revealCls());
       el.appendChild(mk("span", "k", k));
       el.appendChild(mk("span", "bar", "\u2588".repeat(filled) + "\u2591".repeat(width - filled)));
       el.appendChild(mk("span", "v", n + "%"));
@@ -102,13 +149,13 @@
       return el;
     },
     tags: function (items) {
-      var el = mk("div", "line tags");
+      var el = mk("div", "line tags" + revealCls());
       items.forEach(function (t) { el.appendChild(mk("span", "tag", t)); });
       output.appendChild(el); trim(); scrollDown();
       return el;
     },
     link: function (label, url, note) {
-      var el = mk("div", "line link-row");
+      var el = mk("div", "line link-row" + revealCls());
       var a = mk("a", "link", label);
       a.href = url;
       a.target = "_blank";
@@ -119,7 +166,7 @@
       return el;
     },
     neofetch: function (logo, rows) {
-      var el = mk("div", "line neo");
+      var el = mk("div", "line neo" + revealCls());
       var pre = mk("pre", "neo-logo", logo);
       var side = mk("div", "neo-side");
       side.appendChild(mk("div", "neo-title", (P.host || "anon")));
@@ -438,6 +485,24 @@
         });
       }
     },
+    friend: {
+      d: "друзья: телеграм близких людей",
+      run: function () {
+        var list = P.friends || [];
+        if (!list.length) { print.line("не публикуются", "muted"); return; }
+        print.line("друзья. в этом списке только те, кто сам не против:", "muted");
+        list.forEach(function (f) {
+          var el = mk("div", "line link-row" + revealCls());
+          var a = mk("a", "link", f.handle);
+          a.href = f.url || ("https://t.me/" + String(f.handle).replace("@", ""));
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          el.appendChild(a);
+          if (f.note) el.appendChild(mk("span", "note", "\u2014 " + f.note));
+          output.appendChild(el); trim(); scrollDown();
+        });
+      }
+    },
     skills: {
       d: "навыки и уровни",
       run: function () {
@@ -641,6 +706,7 @@
     "whoami.txt":   "whoami",
     "about.txt":    "about",
     "projects.txt": "projects",
+    "friends.txt":  "friend",
     "skills.txt":   "skills",
     "stack.txt":   "stack",
     "links.txt":   "links",
@@ -652,6 +718,7 @@
   function setStatus(text) { if (statusEl) statusEl.textContent = text; }
 
   function run(raw) {
+    finishNow();
     var line = raw.trim();
     print.echo(line);
     if (!line) return;
@@ -736,6 +803,7 @@
   if (screen) {
     screen.addEventListener("click", function (e) {
       if (booting) { skipBoot(); return; }
+      finishNow();
       if (e.target && e.target.closest && e.target.closest("a")) return;
       if (!cmd.disabled) cmd.focus();
     });
@@ -755,6 +823,78 @@
   function tick() {
     if (!clockEl) return;
     clockEl.textContent = new Date().toLocaleTimeString("ru-RU", { hour12: false });
+  }
+
+  /* --- мягкий фон: сверху медленно плывут приглушённые глифы ------------- */
+  function initBackground() {
+    if (reduce) return;
+    var canvas = document.createElement("canvas");
+    canvas.id = "bg";
+    canvas.setAttribute("aria-hidden", "true");
+    document.body.insertBefore(canvas, document.body.firstChild);
+    var ctx = canvas.getContext ? canvas.getContext("2d") : null;
+    if (!ctx) return;
+
+    var glyphs = "01·+*◦∙";
+    var parts = [];
+    var W = 0, H = 0;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var color = "#4dff9b";
+    var lastTheme = root.getAttribute("data-theme");
+
+    function resize() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = Math.max(1, W * dpr);
+      canvas.height = Math.max(1, H * dpr);
+      canvas.style.width = W + "px";
+      canvas.style.height = H + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function make(fromTop) {
+      return {
+        x: Math.random() * W,
+        y: fromTop ? -24 : Math.random() * H,
+        s: 10 + Math.random() * 8,
+        v: 0.25 + Math.random() * 0.75,
+        a: 0.04 + Math.random() * 0.10,
+        d: (Math.random() - 0.5) * 0.2,
+        g: glyphs.charAt(Math.floor(Math.random() * glyphs.length))
+      };
+    }
+
+    function readAccent() {
+      var c = "";
+      try { c = getComputedStyle(root).getPropertyValue("--accent").trim(); } catch (e) {}
+      return c || "#4dff9b";
+    }
+
+    resize();
+    color = readAccent();
+    var n = Math.max(24, Math.min(60, Math.floor(W / 28)));
+    for (var i = 0; i < n; i++) parts.push(make(false));
+    window.addEventListener("resize", resize);
+
+    (function loop() {
+      if (root.getAttribute("data-theme") !== lastTheme) {
+        lastTheme = root.getAttribute("data-theme");
+        color = readAccent();
+      }
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = color;
+      for (var k = 0; k < parts.length; k++) {
+        var p = parts[k];
+        p.y += p.v;
+        p.x += p.d;
+        if (p.y > H + 24 || p.x < -24 || p.x > W + 24) { parts[k] = make(true); continue; }
+        ctx.globalAlpha = p.a;
+        ctx.font = p.s + "px monospace";
+        ctx.fillText(p.g, p.x, p.y);
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(loop);
+    })();
   }
 
   /* --- автозагрузка ------------------------------------------------------ */
@@ -794,6 +934,7 @@
 
   async function boot() {
     initTheme();
+    initBackground();
     tick();
     setInterval(tick, 1000);
 
@@ -842,7 +983,7 @@
     cmd.placeholder = "";
     cmd.focus({ preventScroll: true });
     setStatus("готово");
-    document.title = (P.nick || "FOFPZ") + " — анонимная визитка";
+    document.title = P.siteTitle || ((P.nick || "FOFPZ") + " — анонимная визитка");
   }
 
   boot();

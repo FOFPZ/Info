@@ -96,6 +96,23 @@ body::after {
 
 .wrap {
   width: min(940px, 100%);
+  position: relative;
+  z-index: 1;
+}
+
+/* --- мягкий фон: падающие глифы на canvas -------------------------------- */
+#bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* плавное появление структурированных строк вывода */
+.reveal-in { animation: reveal 0.28s ease-out; }
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
 }
 
 /* --- корпус терминала ---------------------------------------------------- */
@@ -462,6 +479,7 @@ kbd {
   .screen { scroll-behavior: auto; }
   body::after { opacity: 0.35; }
   .shake { animation: none; }
+  .reveal-in { animation: none; }
 }
 
 @media (prefers-contrast: more) {
