@@ -1,0 +1,35 @@
+# Редакторы и ОС
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*~
+
+# Зависимости и сборки
+node_modules/
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+
+# Логи и временные файлы
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Локальные секреты и окружение
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# артефакты инструментов поиска изображений
+image-search/
